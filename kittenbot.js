@@ -38,14 +38,18 @@ var RtmClient = require('@slack/client').RtmClient;
 var RTM_EVENTS = require('@slack/client').RTM_EVENTS;
 
 var token = process.env.SLACK_API_TOKEN || '';
-// var token = 'xoxb-221043661830-xwLcsxcgSVHVM4fC96V5Veyb';
 
 var rtm = new RtmClient(token, { logLevel: 'debug' });
 rtm.start();
 
 rtm.on(RTM_EVENTS.MESSAGE, function handleRtmMessage(message) {
   console.log('Message:', message);
+  rtm.sendMessage('HEY YOU', 'C6H7A4M71')
 });
+
+// rtm.post(''){
+//   "text": "New comic book alert! _The Further Adventures of Slackbot_, Volume 1, Issue 3."
+// }
 
 rtm.on(RTM_EVENTS.REACTION_ADDED, function handleRtmReactionAdded(reaction) {
   console.log('Reaction added:', reaction);
