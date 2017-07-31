@@ -44,12 +44,9 @@ rtm.start();
 
 rtm.on(RTM_EVENTS.MESSAGE, function handleRtmMessage(message) {
   console.log('Message:', message);
-  rtm.sendMessage('HEY YOU', 'C6H7A4M71')
+  rtm.sendMessage('HEY ITS KAMRAN', message.channel)
 });
 
-// rtm.post(''){
-//   "text": "New comic book alert! _The Further Adventures of Slackbot_, Volume 1, Issue 3."
-// }
 
 rtm.on(RTM_EVENTS.REACTION_ADDED, function handleRtmReactionAdded(reaction) {
   console.log('Reaction added:', reaction);
