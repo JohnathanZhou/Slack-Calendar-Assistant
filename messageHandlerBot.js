@@ -13,13 +13,19 @@ var WebHook = new IncomingWebhook(url)
 var rtm = new RtmClient(token, { logLevel: 'debug' });
 rtm.start();
 
+// rtm.on(RTM_EVENTS.MESSAGE, function handleRtmMessage(message) {
+//   if (message.text === 'hi') {
+//     web.chat.postMessage(message.channel, 'yo')
+//   }
+// });
+
 rtm.on(RTM_EVENTS.MESSAGE, function handleRtmMessage(message) {
   console.log('Message:', message);
   if (message.subtype === 'bot_message') {
     return;
   }
   else {
-    web.chat.postMessage(message.channel, 'HEY YOU', { "attachments": [
+    web.chat.postMessage(message.channel, 'yo', { "attachments": [
           {
               "fallback": "You are unable to choose a game",
               "callback_id": "wopr_game",
