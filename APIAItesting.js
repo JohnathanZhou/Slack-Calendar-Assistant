@@ -139,17 +139,16 @@ rtm.on(RTM_EVENTS.MESSAGE, function handleRtmMessage(message) {
   else {
     var slackUsername = rtm.dataStore.getUserById(message.user);
     if (slackUsername) {
-      // postAI(message)
-      // .then((data) =>
-      //   {
-      //     console.log('THIS IS THE TEST FUNCTION IT SHOULD BE BOOLEAN: ',test);
-      //   const msg = data.data.result.fulfillment.speech
-      //   console.log('THIS IS YOUR DATA: ', msg)
-      //   confirmMessage(message.channel, msg)
-      // })
-      // .catch((err) => (
-      //   console.log('error ', err)))
-        web.chat.postMessage(message.channel, 'please use this link '+process.env.WEBHOOK_URL+'/connect')
+      postAI(message)
+      .then((data) =>
+        {
+          console.log('THIS IS THE TEST FUNCTION IT SHOULD BE BOOLEAN: ',test);
+        const msg = data.data.result.fulfillment.speech
+        console.log('THIS IS YOUR DATA: ', msg)
+        confirmMessage(message.channel, msg)
+      })
+      .catch((err) => (
+        console.log('error ', err)))
     }
     else {
         web.chat.postMessage(message.channel, process.env.WEBHOOK_URL+'/auth')

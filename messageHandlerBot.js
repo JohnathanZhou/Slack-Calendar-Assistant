@@ -61,6 +61,104 @@ function sendMessageToSlackResponseURL(responseURL, JSONmessage){
     })
 }
 
+var postAI = function(message) {
+  console.log('inside post request');
+
+  // curl 'https://api.api.ai/api/query?v=20150910&query=hi&lang=en&sessionId=bad504f3-0f2c-463e-8d34-d9097fe24091&timezone=2017-08-01T10:53:53-0700' -H 'Authorization:Bearer 62a307990113474eade3e4a3a7472e4f'
+  return axios.post('https://api.api.ai/v1/query?v=20150910', {
+      query: message.text,
+      lang: 'en',
+      sessionId: message.user,
+      timezone: "2017-08-01T10:53:53-0700"
+    },
+    {
+      headers: {Authorization: `Bearer ${process.env.APIAI_TOKEN}`}
+    }
+  )
+}
+
+var confirmMessage = function(channel, message) {
+  if (message.includes("set!")) {
+    // web.chat.postMessage(channel, message, web.chat.postMessage(channel, message)
+    console.log('It works!');
+    web.chat.postMessage(channel, message+' Confirm that this event is ok? ', { "attachments": [
+          {
+              "fallback": "Unable to set calendar event",
+              "callback_id": "wopr_game",
+              "color": "#3AA3E3",
+              "attachment_type": "default",
+              "actions": [
+                {
+                    "name": "reminder",
+                    "text": "Yes",
+                    "type": "button",
+                    "value": "scheduleReminder",
+                },
+                {
+                    "name": "reminder",
+                    "text": "No",
+                    "type": "button",
+                    "value": "dontScheduleReminder"
+                },
+            ]
+          }
+      ]}, function(err, res) {
+    if (err) {
+      console.log('Error:', err);
+    } else {
+      console.log('Message sent: ', res);
+
+      //USER INFO FOR MODEL:
+      var user = rtm.dataStore.getUserById(message.user);
+      console.log('HERES A BUNCH OF INFO: slackID: ', user.id, 'slackUsername: ', user.name, 'slackEmail: ', user.profile.email);
+    }
+    })
+  }
+  else {
+    web.chat.postMessage(channel, message)
+  }
+}
+
+function sendMessageToSlackResponseURL(responseURL, JSONmessage){
+    var postOptions = {
+        uri: responseURL,
+        method: 'POST',
+        headers: {
+            'Content-type': 'application/json'
+        },
+        json: JSONmessage
+    }
+    request(postOptions, (error, response, body) => {
+        if (error){
+            console.log("CANT SENT RESPONSE YIKES")
+        }
+    })
+}
+
+rtm.on(RTM_EVENTS.MESSAGE, function handleRtmMessage(message) {
+  if (message.subtype === 'bot_message') {
+    return;
+  }
+  else {
+    var slackUsername = rtm.dataStore.getUserById(message.user);
+    if (slackUsername) {
+      postAI(message)
+      .then((data) =>
+        {
+          console.log('THIS IS THE TEST FUNCTION IT SHOULD BE BOOLEAN: ',test);
+        const msg = data.data.result.fulfillment.speech
+        console.log('THIS IS YOUR DATA: ', msg)
+        confirmMessage(message.channel, msg)
+      })
+      .catch((err) => (
+        console.log('error ', err)))
+    }
+    else {
+        web.chat.postMessage(message.channel, process.env.WEBHOOK_URL+'/auth')
+    }
+  }
+})
+
 rtm.on(RTM_EVENTS.MESSAGE, function handleRtmMessage(message) {
   console.log('Message:', message);
   if (message.subtype === 'bot_message') {

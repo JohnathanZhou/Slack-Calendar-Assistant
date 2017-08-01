@@ -41,6 +41,7 @@ function allRoutes (rtm, web) {
 
   router.get('/auth', function(req, res) {
     var id = JSON.parse(decodeURIComponent(req.query.state));
+    var realId = id.auth_id
     var code = req.query.code;
     var oauth2Client = new OAuth2(
       process.env.GOOGLE_CLIENT_ID,
@@ -49,14 +50,16 @@ function allRoutes (rtm, web) {
     );
     oauth2Client.getToken(code, function(err, tokens) {
       if (! err) {
-        User.findOne(id, function(err, user) {
+        console.log(id);
+        User.findById(realId, function(err, user) {
           if (err) {
-            console.log(err);
+            console.log('THIS IS UR FUCKING ERROR: ', err);
           } else {
+            console.log('THIS IS UR USER PLEASE SHOW: ', user);
             user.google = tokens;
             oauth2Client.setCredentials({
-              access_token: user.google.tokens.access_token,
-              refresh_token: user.google.tokens.fresh_token
+              access_token: tokens.access_token,
+              refresh_token: tokens.fresh_token
             });
             res.redirect('/auth/success');
           }
