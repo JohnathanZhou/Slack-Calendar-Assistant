@@ -101,7 +101,7 @@ rtm.on(RTM_EVENTS.MESSAGE, function handleRtmMessage(message) {
         {
         const msg = data.data.result.fulfillment.speech
         console.log('THIS IS YOUR DATA: ', msg)
-        web.chat.postMessage(message.channel, msg)
+        confirmMessage(message.channel, msg)
       })
       .catch((err) => (
         console.log('error ', err)))
@@ -125,17 +125,45 @@ var postAI = function(message) {
 }
 
 var confirmMessage = function(channel, message) {
-  
+  if (message.includes("set!")) {
+    // web.chat.postMessage(channel, message, web.chat.postMessage(channel, message)
+    console.log('It works!');
+    web.chat.postMessage(channel, message+' Confirm that this event is ok? ', { "attachments": [
+          {
+              "fallback": "Unable to set calendar event",
+              "callback_id": "wopr_game",
+              "color": "#3AA3E3",
+              "attachment_type": "default",
+              "actions": [
+                  {
+                      "name": "YesNo",
+                      "text": "Yes",
+                      "type": "button",
+                      "value": "yes"
+                  },
+                  {
+                      "name": "YesNo",
+                      "text": "No",
+                      "type": "button",
+                      "value": "no"
+                  }
+              ]
+          }
+      ]})
+  }
+  else {
+    web.chat.postMessage(channel, message)
+  }
 }
 
 
-rtm.on(RTM_EVENTS.REACTION_ADDED, function handleRtmReactionAdded(reaction) {
-  console.log('Reaction added:', reaction);
-});
-
-rtm.on(RTM_EVENTS.REACTION_REMOVED, function handleRtmReactionRemoved(reaction) {
-  console.log('Reaction removed:', reaction);
-});
+// rtm.on(RTM_EVENTS.REACTION_ADDED, function handleRtmReactionAdded(reaction) {
+//   console.log('Reaction added:', reaction);
+// });
+//
+// rtm.on(RTM_EVENTS.REACTION_REMOVED, function handleRtmReactionRemoved(reaction) {
+//   console.log('Reaction removed:', reaction);
+// });
 
 var port = process.env.PORT || 3000;
 app.listen(port);
