@@ -5,8 +5,15 @@ var RtmClient = require('@slack/client').RtmClient;
 var RTM_EVENTS = require('@slack/client').RTM_EVENTS;
 var WebClient = require('@slack/client').WebClient;
 var IncomingWebhook = require('@slack/client').IncomingWebhook;
+var express = require('express');
+var path = require('path');
+var logger = require('morgan');
+var bodyParser = require('body-parser');
+var mongoose = require('mongoose');
+var connect = process.env.MONGODB_URI;
 
-// var googleCalendarHandler = require('./googleCalendarHandler');
+var models = require('./models/models');
+var routes = require('./routes/routes');
 
 var token = process.env.SLACK_API_TOKEN || '';
 var url = process.env.WEBHOOK_URL || '';
@@ -15,12 +22,24 @@ var WebHook = new IncomingWebhook(url)
 
 var rtm = new RtmClient(token, { logLevel: 'debug' });
 rtm.start();
+mongoose.connect(connect);
+var app = express();
 
-// rtm.on(RTM_EVENTS.MESSAGE, function handleRtmMessage(message) {
-//   if (message.text === 'hi') {
-//     web.chat.postMessage(message.channel, 'yo')
-//   }
-// });
+// view engine setup
+var hbs = require('express-handlebars')({
+  defaultLayout: 'main',
+  extname: '.hbs'
+});
+app.engine('hbs', hbs);
+app.set('views', path.join(__dirname, 'views'));
+app.set('view engine', 'hbs');
+
+app.use(logger('tiny'));
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: false }));
+app.use(express.static(path.join(__dirname, 'public')));
+
+app.use('/', routes);
 
 rtm.on(RTM_EVENTS.MESSAGE, function handleRtmMessage(message) {
   console.log('Message:', message);
@@ -80,3 +99,7 @@ rtm.on(RTM_EVENTS.REACTION_ADDED, function handleRtmReactionAdded(reaction) {
 rtm.on(RTM_EVENTS.REACTION_REMOVED, function handleRtmReactionRemoved(reaction) {
   console.log('Reaction removed:', reaction);
 });
+
+var port = process.env.PORT || 3000;
+app.listen(port);
+console.log('Express started. Listening on port %s', port);
