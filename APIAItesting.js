@@ -11,7 +11,7 @@ var logger = require('morgan');
 var bodyParser = require('body-parser');
 var mongoose = require('mongoose');
 var connect = process.env.MONGODB_URI;
-
+var axios = require('axios')
 var models = require('./models/models');
 var routes = require('./routes/routes');
 
@@ -43,10 +43,10 @@ app.use('/', routes);
 
 // rtm.on(RTM_EVENTS.MESSAGE, function handleRtmMessage(message) {
 //   console.log('Message:', message);
-//   if (message.subtype === 'bot_message') {
-//     return;
-//   }
-//   else {
+  // if (message.subtype === 'bot_message') {
+  //   return;
+  // }
+  // else {
 //     web.chat.postMessage(message.channel, 'yo', { "attachments": [
 //           {
 //               "fallback": "You are unable to choose a game",
@@ -92,18 +92,41 @@ app.use('/', routes);
 // });
 
 rtm.on(RTM_EVENTS.MESSAGE, function handleRtmMessage(message) {
-  axios.post('https://api.api.ai/v1/query?v=20150910', {
-    headers: {Authorization: 'Bearer', 'Content-Type': 'application/json; charset=utf-8'},
-    data: {
+  if (message.subtype === 'bot_message') {
+    return;
+  }
+  else {
+      postAI(message)
+      .then((data) =>
+        {
+        const msg = data.data.result.fulfillment.speech
+        console.log('THIS IS YOUR DATA: ', msg)
+        web.chat.postMessage(message.channel, msg)
+      })
+      .catch((err) => (
+        console.log('error ', err)))
+  }
+})
+
+var postAI = function(message) {
+  console.log('inside post request');
+
+  // curl 'https://api.api.ai/api/query?v=20150910&query=hi&lang=en&sessionId=bad504f3-0f2c-463e-8d34-d9097fe24091&timezone=2017-08-01T10:53:53-0700' -H 'Authorization:Bearer 62a307990113474eade3e4a3a7472e4f'
+  return axios.post('https://api.api.ai/v1/query?v=20150910', {
       query: message.text,
       lang: 'en',
-      sessionId: message.user}
-    })
-    .then((data) => {
-      console.log(data);
-    })
-  web.chat.postMessage(message.channel, 'yo')
-})
+      sessionId: message.user,
+      timezone: "2017-08-01T10:53:53-0700"
+    },
+    {
+      headers: {Authorization: `Bearer ${process.env.APIAI_TOKEN}`}
+    }
+  )
+}
+
+var confirmMessage = function(channel, message) {
+  
+}
 
 
 rtm.on(RTM_EVENTS.REACTION_ADDED, function handleRtmReactionAdded(reaction) {
