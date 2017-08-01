@@ -83,7 +83,7 @@ function allRoutes (rtm, web) {
     // };
     //
   // })
-  }
+  })
   return router;
 }
 
