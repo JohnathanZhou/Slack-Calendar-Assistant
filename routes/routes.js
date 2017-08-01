@@ -56,8 +56,11 @@ function allRoutes (rtm, web) {
     })
   });
 
-  router.post('/interactive', function(req, res) {
+  router.post('/interactive', urlencodedParser, (req, res) => {
     console.log('this is req.body', req.body);
+    var parsed = JSON.parse(req.body.payload);
+    var response = parsed.actions[0].value;
+    res.send(response)
     // var tomorrow = new Date();
     // tomorrow.setDate(task.day.getDate() + 1);
     // var event = {
@@ -79,22 +82,6 @@ function allRoutes (rtm, web) {
     //   }
     // };
     //
-    // calendar.events.insert({
-    //   auth: oauth2Client,
-    //   calendarId: 'primary',
-    //   resource: event,
-    // }, function(err, event) {
-    //   if (err) {
-    //     console.log('There was an error contacting the Calendar service: ' + err);
-    //     return;
-    //   }
-    //   console.log('Event created: %s', event.htmlLink);
-    // });
-    // send something back to post request
-  });
-
-  // router.post('/addMeeting', function(req, res) {
-  //
   // })
   return router;
 }
