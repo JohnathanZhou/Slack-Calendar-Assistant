@@ -23,7 +23,7 @@ var web = new WebClient(token);
 var WebHook = new IncomingWebhook(url)
 
 var rtm = new RtmClient(token, { logLevel: 'debug' });
-rtm.start();
+
 mongoose.connect(connect);
 var app = express();
 
@@ -41,7 +41,7 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(express.static(path.join(__dirname, 'public')));
 
-app.use('/', routes);
+app.use('/', routes(rtm, web));
 
 function sendMessageToSlackResponseURL(responseURL, JSONmessage){
     var postOptions = {
@@ -132,4 +132,4 @@ rtm.on(RTM_EVENTS.REACTION_REMOVED, function handleRtmReactionRemoved(reaction) 
 
 var port = process.env.PORT || 3000;
 app.listen(port);
-console.log('Express started. Listening on port %s', port);
+rtm.start();
