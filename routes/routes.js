@@ -50,8 +50,11 @@ router.get('/auth', function(req, res) {
   })
 });
 
-router.post('/interactive', function(req, res) {
+router.post('/interactive', urlencodedParser, (req, res) => {
   console.log('this is req.body', req.body);
+  var parsed = JSON.parse(req.body.payload);
+  var response = parsed.actions[0].value;
+  res.send(response)
   // var tomorrow = new Date();
   // tomorrow.setDate(task.day.getDate() + 1);
   // var event = {
