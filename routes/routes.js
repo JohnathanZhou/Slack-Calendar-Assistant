@@ -51,12 +51,10 @@ function allRoutes (rtm, web) {
     oauth2Client.getToken(code, function(err, tokens) {
       if (! err) {
         console.log(id);
-        User.findById(realId, function(err, user) {
+        User.findByIdAndUpdate(realId, {google: tokens}, {new: true},  function(err, user) {
           if (err) {
-            console.log('THIS IS UR FUCKING ERROR: ', err);
+            console.log('This is your ERROR: ', err);
           } else {
-            console.log('THIS IS UR USER PLEASE SHOW: ', user);
-            user.google = tokens;
             oauth2Client.setCredentials({
               access_token: tokens.access_token,
               refresh_token: tokens.fresh_token

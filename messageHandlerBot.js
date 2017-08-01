@@ -11,6 +11,7 @@ var logger = require('morgan');
 var bodyParser = require('body-parser');
 var mongoose = require('mongoose');
 var connect = process.env.MONGODB_URI;
+var axios = require('axios');
 
 var urlencodedParser = bodyParser.urlencoded({ extended: false });
 
@@ -61,7 +62,7 @@ function sendMessageToSlackResponseURL(responseURL, JSONmessage){
     })
 }
 
-var postAI = function(message) {
+const postAI = function(message) {
   console.log('inside post request');
 
   // curl 'https://api.api.ai/api/query?v=20150910&query=hi&lang=en&sessionId=bad504f3-0f2c-463e-8d34-d9097fe24091&timezone=2017-08-01T10:53:53-0700' -H 'Authorization:Bearer 62a307990113474eade3e4a3a7472e4f'
@@ -77,7 +78,7 @@ var postAI = function(message) {
   )
 }
 
-var confirmMessage = function(channel, message) {
+const confirmMessage = function(channel, message) {
   if (message.includes("set!")) {
     // web.chat.postMessage(channel, message, web.chat.postMessage(channel, message)
     console.log('It works!');
@@ -135,29 +136,29 @@ function sendMessageToSlackResponseURL(responseURL, JSONmessage){
     })
 }
 
-rtm.on(RTM_EVENTS.MESSAGE, function handleRtmMessage(message) {
-  if (message.subtype === 'bot_message') {
-    return;
-  }
-  else {
-    var slackUsername = rtm.dataStore.getUserById(message.user);
-    if (slackUsername) {
-      postAI(message)
-      .then((data) =>
-        {
-          console.log('THIS IS THE TEST FUNCTION IT SHOULD BE BOOLEAN: ',test);
-        const msg = data.data.result.fulfillment.speech
-        console.log('THIS IS YOUR DATA: ', msg)
-        confirmMessage(message.channel, msg)
-      })
-      .catch((err) => (
-        console.log('error ', err)))
-    }
-    else {
-        web.chat.postMessage(message.channel, process.env.WEBHOOK_URL+'/auth')
-    }
-  }
-})
+// rtm.on(RTM_EVENTS.MESSAGE, function handleRtmMessage(message) {
+//   if (message.subtype === 'bot_message') {
+//     return;
+//   }
+//   else {
+//     var slackUsername = rtm.dataStore.getUserById(message.user);
+//     if (slackUsername) {
+//       postAI(message)
+//       .then((data) =>
+//         {
+//           console.log('THIS IS THE TEST FUNCTION IT SHOULD BE BOOLEAN: ',test);
+//         const msg = data.data.result.fulfillment.speech
+//         console.log('THIS IS YOUR DATA: ', msg)
+//         confirmMessage(message.channel, msg)
+//       })
+//       .catch((err) => (
+//         console.log('error ', err)))
+//     }
+//     else {
+//         web.chat.postMessage(message.channel, process.env.WEBHOOK_URL+'/auth')
+//     }
+//   }
+// })
 
 rtm.on(RTM_EVENTS.MESSAGE, function handleRtmMessage(message) {
   console.log('Message:', message);
@@ -174,7 +175,15 @@ rtm.on(RTM_EVENTS.MESSAGE, function handleRtmMessage(message) {
         console.log(err);
       } else if (user) {
         if (user.google) {
-          web.chat.postMessage(message.channel, "Welcome. Would you like to set a reminder?");
+          postAI(message)
+          .then((data) =>
+            {
+            const msg = data.data.result.fulfillment.speech
+            console.log('THIS IS YOUR DATA: ', msg)
+            confirmMessage(message.channel, msg)
+          })
+          .catch((err) => (
+            console.log('error ', err)))
         } else {
           web.chat.postMessage(message.channel, "You have not authenticated with Google Calendar yet. Please follow this link to authenticate: " + process.env.DOMAIN + "/connect?auth_id=" + user._id);
         }
@@ -192,49 +201,6 @@ rtm.on(RTM_EVENTS.MESSAGE, function handleRtmMessage(message) {
         });
       }
     });
-
-  //   web.chat.postMessage(message.channel, 'Would you like to schedule a reminder?', { "attachments": [
-  //         {
-  //             "fallback": "You are unable to schedule a reminder",
-  //             "callback_id": "scheduleReminder",
-  //             "color": "#3AA3E3",
-  //             "attachment_type": "default",
-  //             "response_url": process.env.NGROK_URL,
-  //             "actions": [
-  //                 {
-  //                     "name": "reminder",
-  //                     "text": "Yes",
-  //                     "type": "button",
-  //                     "value": "scheduleReminder",
-  //                 },
-  //                 {
-  //                     "name": "reminder",
-  //                     "text": "No",
-  //                     "type": "button",
-  //                     "value": "dontScheduleReminder"
-  //                 },
-  //                 {
-  //                     "name": "game",
-  //                     "text": "options",
-  //                     "style": "danger",
-  //                     "type": "button",
-  //                     "value": "war",
-  //                     "confirm": {
-  //                         "title": "Are you sure?",
-  //                         "text": "Wouldn't you prefer a good game of chess?",
-  //                         "ok_text": "Yes",
-  //                         "dismiss_text": "No"
-  //                     }
-  //                 }
-  //             ]
-  //         }
-  //     ]}, function(err, res) {
-  //   if (err) {
-  //     console.log('Error:', err);
-  //   } else {
-  //     console.log('Message sent: ', res);
-  //   }
-  // });
   }
 });
 
