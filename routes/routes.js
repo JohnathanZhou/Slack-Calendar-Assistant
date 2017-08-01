@@ -4,9 +4,13 @@ var models = require('../models/models');
 var mongoose = require('mongoose');
 var connect = process.env.MONGODB_URI;
 var User = models.User;
+var bodyParser = require('body-parser');
 var google = require('googleapis');
 var checkToken = require('../checkToken');
 var OAuth2 = google.auth.OAuth2;
+
+var urlencodedParser = bodyParser.urlencoded({ extended: false });
+
 
 mongoose.connect(connect);
 
