@@ -4,16 +4,11 @@ var models = require('../models/models');
 var User = models.User;
 var google = require('googleapis');
 var OAuth2 = google.auth.OAuth2;
-var calendar = google.calendar('v3');
 var oauth2Client = new OAuth2(
   process.env.GOOGLE_CLIENT_ID,
   process.env.GOOGLE_CLIENT_SECRET,
   process.env.REDIRECT
 );
-
-router.get('/', function(req, res) {
-  res.render('home');
-})
 
 router.get('/connect', function(req, res, next) {
   if (req.query.auth_id) {
@@ -49,43 +44,50 @@ router.get('/auth', function(req, res) {
           });
         }
       });
-      res.redirect('/addReminder');
+      res.send(200);
     }
   })
 });
 
-router.get('/addReminder', function(req, res) {
-  var event = {
-    'summary': 'Testing all day event',
-    'start': {
-      'date': '2017-08-01',
-      'timeZone': 'America/Los_Angeles',
-    },
-    'end': {
-      'date': '2017-08-02',
-      'timeZone': 'America/Los_Angeles',
-    },
-    'reminders': {
-      'useDefault': false,
-      'overrides': [
-        {'method': 'email', 'minutes': 24 * 60},
-        {'method': 'popup', 'minutes': 10},
-      ],
-    },
-  };
-
-  calendar.events.insert({
-    auth: oauth2Client,
-    calendarId: 'primary',
-    resource: event,
-  }, function(err, event) {
-    if (err) {
-      console.log('There was an error contacting the Calendar service: ' + err);
-      return;
-    }
-    console.log('Event created: %s', event.htmlLink);
-    res.redirect('/');
-  });
+router.post('/addReminder', function(req, res) {
+  console.log('this is req.body', req.body);
+  // var tomorrow = new Date();
+  // tomorrow.setDate(task.day.getDate() + 1);
+  // var event = {
+  //   'summary': '',
+  //   'start': {
+  //     'date': '',
+  //     'timeZone': 'America/Los_Angeles',
+  //   },
+  //   'end': {
+  //     'date': '',
+  //     'timeZone': 'America/Los_Angeles',
+  //   },
+  //   'reminders': {
+  //     'useDefault': false,
+  //     'overrides': [
+  //       {'method': 'email', 'minutes': 24 * 60},
+  //       {'method': 'popup', 'minutes': 24 * 60},
+  //     ],
+  //   }
+  // };
+  //
+  // calendar.events.insert({
+  //   auth: oauth2Client,
+  //   calendarId: 'primary',
+  //   resource: event,
+  // }, function(err, event) {
+  //   if (err) {
+  //     console.log('There was an error contacting the Calendar service: ' + err);
+  //     return;
+  //   }
+  //   console.log('Event created: %s', event.htmlLink);
+  // });
+  // send something back to post request
 });
+
+// router.post('/addMeeting', function(req, res) {
+//
+// })
 
 module.exports = router;
