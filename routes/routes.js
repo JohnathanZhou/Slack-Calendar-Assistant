@@ -35,56 +35,57 @@ router.get('/connect', function(req, res, next) {
 });
 
 router.get('/auth', function(req, res) {
-  //var id = JSON.parse(decodeURIComponent(req.query.state));
+  var id = JSON.parse(decodeURIComponent(req.query.state));
   var code = req.query.code;
   oauth2Client.getToken(code, function(err, tokens) {
     if (! err) {
-      oauth2Client.setCredentials(tokens);
-      // User.findByIdAndUpdate(id, {google: tokens}, function(err) {
-      //   // use rtm to send message err back to user
-      // })
-      var event = {
-        'summary': 'Google I/O 2015',
-        'location': '800 Howard St., San Francisco, CA 94103',
-        'description': 'A chance to hear more about Google\'s developer products.',
-        'start': {
-          'dateTime': '2017-05-28T09:00:00-07:00',
-          'timeZone': 'America/Los_Angeles',
-        },
-        'end': {
-          'dateTime': '2017-05-28T17:00:00-07:00',
-          'timeZone': 'America/Los_Angeles',
-        },
-        'recurrence': [
-          'RRULE:FREQ=DAILY;COUNT=2'
-        ],
-        'attendees': [
-          {'email': 'lpage@example.com'},
-          {'email': 'sbrin@example.com'},
-        ],
-        'reminders': {
-          'useDefault': false,
-          'overrides': [
-            {'method': 'email', 'minutes': 24 * 60},
-            {'method': 'popup', 'minutes': 10},
-          ],
-        },
-      };
-
-      calendar.events.insert({
-        auth: oauth2Client,
-        calendarId: 'primary',
-        resource: event,
-      }, function(err, event) {
+      User.findByIdAndUpdate(id, {google: tokens}, {new: true}, function(err, user) {
         if (err) {
-          console.log('There was an error contacting the Calendar service: ' + err);
-          return;
+          console.log(err);
+        } else {
+          oauth2Client.setCredentials({
+            access_token: user.google.tokens.access_token,
+            refresh_token: user.google.tokens.fresh_token
+          });
         }
-        console.log('Event created: %s', event.htmlLink);
       });
+      res.redirect('/addReminder');
     }
   })
-  res.redirect('/');
-})
+});
+
+router.get('/addReminder', function(req, res) {
+  var event = {
+    'summary': 'Testing all day event',
+    'start': {
+      'date': '2017-08-01',
+      'timeZone': 'America/Los_Angeles',
+    },
+    'end': {
+      'date': '2017-08-02',
+      'timeZone': 'America/Los_Angeles',
+    },
+    'reminders': {
+      'useDefault': false,
+      'overrides': [
+        {'method': 'email', 'minutes': 24 * 60},
+        {'method': 'popup', 'minutes': 10},
+      ],
+    },
+  };
+
+  calendar.events.insert({
+    auth: oauth2Client,
+    calendarId: 'primary',
+    resource: event,
+  }, function(err, event) {
+    if (err) {
+      console.log('There was an error contacting the Calendar service: ' + err);
+      return;
+    }
+    console.log('Event created: %s', event.htmlLink);
+    res.redirect('/');
+  });
+});
 
 module.exports = router;
