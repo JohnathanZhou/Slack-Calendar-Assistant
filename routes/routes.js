@@ -16,7 +16,7 @@ router.get('/', function(req, res) {
 })
 
 router.get('/connect', function(req, res, next) {
-  //if (req.query.auth_id) {
+  if (req.query.auth_id) {
     var url = oauth2Client.generateAuthUrl({
       access_type: 'offline',
       prompt: 'consent',
@@ -24,14 +24,14 @@ router.get('/connect', function(req, res, next) {
         'https://www.googleapis.com/auth/plus.me',
         'https://www.googleapis.com/auth/calendar'
       ],
-      // state: encodeURIComponent(JSON.stringify({
-      //   auth_id: req.query.auth_id
-      // }))
+      state: encodeURIComponent(JSON.stringify({
+        auth_id: req.query.auth_id
+      }))
     });
     res.redirect(url);
-  //} else {
-    //res.send(404);
-  //}
+  } else {
+    res.send(404);
+  }
 });
 
 router.get('/auth', function(req, res) {

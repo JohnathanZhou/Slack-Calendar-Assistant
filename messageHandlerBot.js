@@ -5,6 +5,9 @@ var RtmClient = require('@slack/client').RtmClient;
 var RTM_EVENTS = require('@slack/client').RTM_EVENTS;
 var WebClient = require('@slack/client').WebClient;
 var IncomingWebhook = require('@slack/client').IncomingWebhook;
+
+// var googleCalendarHandler = require('./googleCalendarHandler');
+
 var token = process.env.SLACK_API_TOKEN || '';
 var url = process.env.WEBHOOK_URL || '';
 var web = new WebClient(token);
