@@ -14,15 +14,14 @@ var urlencodedParser = bodyParser.urlencoded({ extended: false });
 
 mongoose.connect(connect);
 
-var oauth2Client = new OAuth2(
-  process.env.GOOGLE_CLIENT_ID,
-  process.env.GOOGLE_CLIENT_SECRET,
-  process.env.DOMAIN + "/auth"
-);
-
 function allRoutes (rtm, web) {
   router.get('/connect', function(req, res, next) {
     if (req.query.auth_id) {
+      var oauth2Client = new OAuth2(
+        process.env.GOOGLE_CLIENT_ID,
+        process.env.GOOGLE_CLIENT_SECRET,
+        process.env.DOMAIN + "/auth"
+      );
       var url = oauth2Client.generateAuthUrl({
         access_type: 'offline',
         prompt: 'consent',
@@ -36,28 +35,39 @@ function allRoutes (rtm, web) {
       });
       res.redirect(url);
     } else {
-      res.send(404);
+      res.status(404).send("Auth_id is not included in query.");
     }
   });
 
   router.get('/auth', function(req, res) {
     var id = JSON.parse(decodeURIComponent(req.query.state));
     var code = req.query.code;
+    var oauth2Client = new OAuth2(
+      process.env.GOOGLE_CLIENT_ID,
+      process.env.GOOGLE_CLIENT_SECRET,
+      process.env.DOMAIN + "/auth"
+    );
     oauth2Client.getToken(code, function(err, tokens) {
       if (! err) {
-        User.findByIdAndUpdate(id, {google: tokens}, {new: true}, function(err, user) {
+        User.findOne(id, function(err, user) {
           if (err) {
-            console.log(err);
+            // rtm message user says authenticate fail
           } else {
+            user.google = tokens;
             oauth2Client.setCredentials({
               access_token: user.google.tokens.access_token,
               refresh_token: user.google.tokens.fresh_token
             });
+            // rtm message user saying authenticate success
+            res.redirect('/auth/success');
           }
-        });
-        res.send(200);
+        })
       }
     })
+  });
+
+  router.get('/auth/success', function(req, res) {
+    res.send("Congratulations! Authenticate with Google Calendar success!")
   });
 
   router.post('/interactive', urlencodedParser, (req, res) => {
