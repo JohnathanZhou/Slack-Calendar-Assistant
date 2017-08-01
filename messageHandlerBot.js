@@ -17,6 +17,8 @@ var urlencodedParser = bodyParser.urlencoded({ extended: false });
 var models = require('./models/models');
 var routes = require('./routes/routes');
 
+var User = models.User;
+
 var token = process.env.SLACK_API_TOKEN || '';
 var url = process.env.WEBHOOK_URL || '';
 var web = new WebClient(token);
@@ -65,52 +67,76 @@ rtm.on(RTM_EVENTS.MESSAGE, function handleRtmMessage(message) {
     return;
   }
   else {
-    web.chat.postMessage(message.channel, 'Would you like to schedule a reminder?', { "attachments": [
-          {
-              "fallback": "You are unable to schedule a reminder",
-              "callback_id": "scheduleReminder",
-              "color": "#3AA3E3",
-              "attachment_type": "default",
-              "response_url": process.env.NGROK_URL,
-              "actions": [
-                  {
-                      "name": "reminder",
-                      "text": "Yes",
-                      "type": "button",
-                      "value": "scheduleReminder",
-                  },
-                  {
-                      "name": "reminder",
-                      "text": "No",
-                      "type": "button",
-                      "value": "dontScheduleReminder"
-                  },
-                  {
-                      "name": "game",
-                      "text": "options",
-                      "style": "danger",
-                      "type": "button",
-                      "value": "war",
-                      "confirm": {
-                          "title": "Are you sure?",
-                          "text": "Wouldn't you prefer a good game of chess?",
-                          "ok_text": "Yes",
-                          "dismiss_text": "No"
-                      }
-                  }
-              ]
-          }
-      ]}, function(err, res) {
-    if (err) {
-      console.log('Error:', err);
-    } else {
-      console.log('Message sent: ', res);
+    //USER INFO FOR MODEL:
+    var slackUser = rtm.dataStore.getUserById(message.user);
+    //console.log('HERES A BUNCH OF INFO: slackID: ', user.id, 'slackUsername: ', user.name, 'slackEmail: ', user.profile.email);
 
-      //USER INFO FOR MODEL:
-      var user = rtm.dataStore.getUserById(message.user);
-      console.log('HERES A BUNCH OF INFO: slackID: ', user.id, 'slackUsername: ', user.name, 'slackEmail: ', user.profile.email);
-    }
-  });
+    User.findOne({slackEmail: slackUser.profile.email}, function(err, user) {
+      if (err) {
+        console.log(err);
+      } else if (user) {
+        if (user.google) {
+          web.chat.postMessage(message.channel, "Welcome. Would you like to set a reminder?");
+        } else {
+          web.chat.postMessage(message.channel, "You have not authenticated with Google Calendar yet. Please follow this link to authenticate: " + process.env.DOMAIN + "/connect?auth_id=" + user._id);
+        }
+      } else if (! user) {
+        new User({
+          slackID: slackUser.id,
+          slackUsername: slackUser.name,
+          slackEmail: slackUser.profile.email,
+        }).save(function(err, user) {
+          if (err) {
+            console.log(err);
+          } else {
+            web.chat.postMessage(message.channel, "You have not authenticated with Google Calendar yet. Please follow this link to authenticate: " + process.env.DOMAIN + "/connect?auth_id=" + user._id);
+          }
+        });
+      }
+    });
+
+  //   web.chat.postMessage(message.channel, 'Would you like to schedule a reminder?', { "attachments": [
+  //         {
+  //             "fallback": "You are unable to schedule a reminder",
+  //             "callback_id": "scheduleReminder",
+  //             "color": "#3AA3E3",
+  //             "attachment_type": "default",
+  //             "response_url": process.env.NGROK_URL,
+  //             "actions": [
+  //                 {
+  //                     "name": "reminder",
+  //                     "text": "Yes",
+  //                     "type": "button",
+  //                     "value": "scheduleReminder",
+  //                 },
+  //                 {
+  //                     "name": "reminder",
+  //                     "text": "No",
+  //                     "type": "button",
+  //                     "value": "dontScheduleReminder"
+  //                 },
+  //                 {
+  //                     "name": "game",
+  //                     "text": "options",
+  //                     "style": "danger",
+  //                     "type": "button",
+  //                     "value": "war",
+  //                     "confirm": {
+  //                         "title": "Are you sure?",
+  //                         "text": "Wouldn't you prefer a good game of chess?",
+  //                         "ok_text": "Yes",
+  //                         "dismiss_text": "No"
+  //                     }
+  //                 }
+  //             ]
+  //         }
+  //     ]}, function(err, res) {
+  //   if (err) {
+  //     console.log('Error:', err);
+  //   } else {
+  //     console.log('Message sent: ', res);
+  //   }
+  // });
   }
 });
 

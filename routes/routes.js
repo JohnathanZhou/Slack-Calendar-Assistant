@@ -51,14 +51,13 @@ function allRoutes (rtm, web) {
       if (! err) {
         User.findOne(id, function(err, user) {
           if (err) {
-            // rtm message user says authenticate fail
+            console.log(err);
           } else {
             user.google = tokens;
             oauth2Client.setCredentials({
               access_token: user.google.tokens.access_token,
               refresh_token: user.google.tokens.fresh_token
             });
-            // rtm message user saying authenticate success
             res.redirect('/auth/success');
           }
         })
