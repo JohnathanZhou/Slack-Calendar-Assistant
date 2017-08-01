@@ -3,6 +3,7 @@ var router = express.Router();
 var models = require('../models/models');
 var User = models.User;
 var google = require('googleapis');
+var checkToken = require('../checkToken');
 var OAuth2 = google.auth.OAuth2;
 var oauth2Client = new OAuth2(
   process.env.GOOGLE_CLIENT_ID,
@@ -49,7 +50,7 @@ router.get('/auth', function(req, res) {
   })
 });
 
-router.post('/addReminder', function(req, res) {
+router.post('/interactive', function(req, res) {
   console.log('this is req.body', req.body);
   // var tomorrow = new Date();
   // tomorrow.setDate(task.day.getDate() + 1);
