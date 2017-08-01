@@ -12,6 +12,8 @@ var bodyParser = require('body-parser');
 var mongoose = require('mongoose');
 var connect = process.env.MONGODB_URI;
 
+var urlencodedParser = bodyParser.urlencoded({ extended: false });
+
 var models = require('./models/models');
 var routes = require('./routes/routes');
 
@@ -41,34 +43,51 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/', routes);
 
+function sendMessageToSlackResponseURL(responseURL, JSONmessage){
+    var postOptions = {
+        uri: responseURL,
+        method: 'POST',
+        headers: {
+            'Content-type': 'application/json'
+        },
+        json: JSONmessage
+    }
+    request(postOptions, (error, response, body) => {
+        if (error){
+            console.log("CANT SENT RESPONSE YIKES")
+        }
+    })
+}
+
 rtm.on(RTM_EVENTS.MESSAGE, function handleRtmMessage(message) {
   console.log('Message:', message);
   if (message.subtype === 'bot_message') {
     return;
   }
   else {
-    web.chat.postMessage(message.channel, 'yo', { "attachments": [
+    web.chat.postMessage(message.channel, 'Would you like to schedule a reminder?', { "attachments": [
           {
-              "fallback": "You are unable to choose a game",
-              "callback_id": "wopr_game",
+              "fallback": "You are unable to schedule a reminder",
+              "callback_id": "scheduleReminder",
               "color": "#3AA3E3",
               "attachment_type": "default",
+              "response_url": process.env.NGROK_URL,
               "actions": [
                   {
-                      "name": "game",
-                      "text": "Chess",
+                      "name": "reminder",
+                      "text": "Yes",
                       "type": "button",
-                      "value": "chess"
+                      "value": "scheduleReminder",
+                  },
+                  {
+                      "name": "reminder",
+                      "text": "No",
+                      "type": "button",
+                      "value": "dontScheduleReminder"
                   },
                   {
                       "name": "game",
-                      "text": "Falken's Maze",
-                      "type": "button",
-                      "value": "maze"
-                  },
-                  {
-                      "name": "game",
-                      "text": "Thermonuclear War",
+                      "text": "options",
                       "style": "danger",
                       "type": "button",
                       "value": "war",
@@ -86,17 +105,28 @@ rtm.on(RTM_EVENTS.MESSAGE, function handleRtmMessage(message) {
       console.log('Error:', err);
     } else {
       console.log('Message sent: ', res);
+
+      //USER INFO FOR MODEL:
+      var user = rtm.dataStore.getUserById(message.user);
+      console.log('HERES A BUNCH OF INFO: slackID: ', user.id, 'slackUsername: ', user.name, 'slackEmail: ', user.profile.email);
     }
   });
   }
 });
 
+app.post('/interactive', urlencodedParser, (req, res) => {
+  var parsed = JSON.parse(req.body.payload);
+  var response = parsed.actions[0].value;
+  res.send(response)
+  //make calendar event here if response is yes
+})
 
 rtm.on(RTM_EVENTS.REACTION_ADDED, function handleRtmReactionAdded(reaction) {
   console.log('Reaction added:', reaction);
 });
 
 rtm.on(RTM_EVENTS.REACTION_REMOVED, function handleRtmReactionRemoved(reaction) {
+
   console.log('Reaction removed:', reaction);
 });
 

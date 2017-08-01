@@ -43,7 +43,11 @@ var User = mongoose.model("User", {
   slackID: String,
   slackUsername: String,
   slackEmail: String,
-  slackDMID: String
+  pending: String,
+  //pending should be a stringified object with the subject, action,
+  //and date from API AI
+  //set pending to empty string once you make event
+  // slackDMID: String
 });
 
 var Invite = mongoose.model("Invite", {
