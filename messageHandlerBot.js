@@ -204,12 +204,15 @@ rtm.on(RTM_EVENTS.MESSAGE, function handleRtmMessage(message) {
   }
 });
 
-// app.post('/interactive', urlencodedParser, (req, res) => {
-//   var parsed = JSON.parse(req.body.payload);
-//   var response = parsed.actions[0].value;
-//   res.send(response)
-  //make calendar event here if response is yes
-// })
+app.post('/interactive', urlencodedParser, (req, res) => {
+  var parsed = JSON.parse(req.body.payload);
+  var response = parsed.actions[0].value;
+  if (response === 'scheduleReminder') {
+    console.log('hey its me im here')
+
+  }
+  // make calendar event here if response is yes
+})
 
 rtm.on(RTM_EVENTS.REACTION_ADDED, function handleRtmReactionAdded(reaction) {
   console.log('Reaction added:', reaction);

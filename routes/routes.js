@@ -70,11 +70,13 @@ function allRoutes (rtm, web) {
     res.send("Congratulations! Authenticate with Google Calendar success!")
   });
 
-  router.post('/interactive', urlencodedParser, (req, res) => {
-    console.log('this is req.body', req.body);
-    var parsed = JSON.parse(req.body.payload);
-    var response = parsed.actions[0].value;
-    res.send(response)
+  // router.post('/interactive', urlencodedParser, (req, res) => {
+  //   console.log('this is req.body', req.body);
+  //   var parsed = JSON.parse(req.body.payload);
+  //   var response = parsed.actions[0].value;
+  //   if (response === 'scheduleReminder') {
+  //     console.log('wassuh');
+  //   }
     // var tomorrow = new Date();
     // tomorrow.setDate(task.day.getDate() + 1);
     // var event = {
@@ -97,7 +99,7 @@ function allRoutes (rtm, web) {
     // };
     //
   // })
-  })
+  // })
   return router;
 }
 
