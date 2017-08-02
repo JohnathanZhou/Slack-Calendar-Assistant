@@ -108,7 +108,8 @@ const confirmMessage = function(channel, message) {
 rtm.on(RTM_EVENTS.MESSAGE, function handleRtmMessage(message) {
   console.log("HEREEEEEEEE: ", message)
   app.use('/', routes(rtm, web, message));
-
+  var userMessage = message.text
+  console.log('THIS I SUSER MESSAGE: ', userMessage);
   if (message.bot_id || (message.message && message.message.bot_id)) {
     return;
   }
@@ -121,7 +122,18 @@ rtm.on(RTM_EVENTS.MESSAGE, function handleRtmMessage(message) {
         console.log(err);
       } else if (user) {
         if (user.google) {
-          postAI(message)
+          var splitMessage = userMessage.split(' ')
+          var newMessage = []
+          splitMessage.map((item) => {
+            if (item.includes('@')) {
+              newMessage.push(item.slice(1, item.length))
+            }
+            else {
+              newMessage.push(item)
+            }
+          })
+          console.log('THIS IS YOUR NEW MESSAGE, SHOULD NOT HAVE @', newMessage);
+          postAI(newMessage)
           .then((data) =>
             {
             const msg = data.data.result.fulfillment.speech
