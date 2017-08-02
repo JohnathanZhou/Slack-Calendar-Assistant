@@ -1,10 +1,20 @@
 //IF NGROK GETS RESET, PUT NEW FORWARD URL HERE:
 //https://api.slack.com/apps/A6G2BGPUK/interactive-messages?saved=1
 
+// RTM installs
 var RtmClient = require('@slack/client').RtmClient;
 var RTM_EVENTS = require('@slack/client').RTM_EVENTS;
 var WebClient = require('@slack/client').WebClient;
 var IncomingWebhook = require('@slack/client').IncomingWebhook;
+
+// RTM requires
+var token = process.env.SLACK_API_TOKEN || '';
+var url = process.env.WEBHOOK_URL || '';
+var web = new WebClient(token);
+var WebHook = new IncomingWebhook(url)
+var rtm = new RtmClient(token, { logLevel: 'debug' });
+
+// Express installs
 var express = require('express');
 var path = require('path');
 var logger = require('morgan');
@@ -12,24 +22,13 @@ var bodyParser = require('body-parser');
 var mongoose = require('mongoose');
 var connect = process.env.MONGODB_URI;
 var axios = require('axios');
-
-var urlencodedParser = bodyParser.urlencoded({ extended: false });
-
 var models = require('./models/models');
 var routes = require('./routes/routes');
-
 var User = models.User;
 
-var token = process.env.SLACK_API_TOKEN || '';
-var url = process.env.WEBHOOK_URL || '';
-var web = new WebClient(token);
-var WebHook = new IncomingWebhook(url)
-
-var rtm = new RtmClient(token, { logLevel: 'debug' });
-
+var urlencodedParser = bodyParser.urlencoded({ extended: false });
 mongoose.connect(connect);
 var app = express();
-
 // view engine setup
 var hbs = require('express-handlebars')({
   defaultLayout: 'main',
@@ -38,7 +37,6 @@ var hbs = require('express-handlebars')({
 app.engine('hbs', hbs);
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'hbs');
-
 app.use(logger('tiny'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));

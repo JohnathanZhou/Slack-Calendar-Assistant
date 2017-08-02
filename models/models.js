@@ -57,9 +57,16 @@ var Invite = mongoose.model("Invite", {
   status: String
 });
 
+var Reminder = mongoose.model("Reminder", {
+  subject: String,
+  date: String,
+  userID: String
+})
+
 module.exports = {
   User: User,
   Task: Task,
   Meeting: Meeting,
-  Invite: Invite
+  Invite: Invite,
+  Reminder: Reminder
 }
