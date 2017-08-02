@@ -124,6 +124,7 @@ rtm.on(RTM_EVENTS.MESSAGE, function handleRtmMessage(message) {
         if (user.google) {
           var splitMessage = userMessage.split(' ')
           var newMessage = []
+          var s
           splitMessage.map((item) => {
             if (item.includes('@')) {
               var slackID = item.slice(2, item.length-1)
