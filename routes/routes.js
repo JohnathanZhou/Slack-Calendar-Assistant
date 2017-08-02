@@ -86,58 +86,72 @@ function allRoutes (rtm, web) {
       }
       else {
         console.log('HERE ARE TOKENS: ', user.google.access_token, 'new space', user.google.refresh_token);
-        oauth2Client.setCredentials({
+        oauth2Client.refreshAccessToken(function(err, tokens) {
+          oauth2Client.setCredentials({
           access_token: user.google.access_token,
           refresh_token: user.google.refresh_token
-        });
+        })})
+        var text = parsed.original_message.text
+        var split = text.split(':')
+        var subject = split[1].split(' ')
+        subject.pop()
+        subject.shift()
+        subject = subject.join(' ')
+        var date = split[2].split(' ')[1]
+        if (response === 'scheduleReminder') {
+          console.log('This is your event with date: ', date);
+          console.log('This is your subject: ', subject);
+          var day = new Date(date)
+          var tomorrow = new Date();
+          tomorrow.setDate(day.getDate()+1);
+          var startYear = day.getFullYear()
+          var startMonth = day.getMonth()
+          var startDay = day.getDate()
+          if (startDay < 10) {
+            startDay = '0'+startDay
+          }
+          var endYear = tomorrow.getFullYear()
+          var endMonth = tomorrow.getMonth()
+          var endDay = tomorrow.getDate()
+          if (endDay < 10) {
+            endDay = '0'+endDay
+          }
+          console.log('these are ur days!!!!', day, tomorrow);
+          var event = {
+            'summary': subject,
+            'start': {
+              'date': startYear+'-'+startMonth+'-'+startDay,
+              // startYear+'-'+startMonth+'-'+startDay
+              'timeZone': 'America/Los_Angeles',
+            },
+            'end': {
+              'date': endYear+'-'+endMonth+'-'+endDay,
+              // endYear+'-'+endMonth+'-'+endDay
+              'timeZone': 'America/Los_Angeles',
+            },
+            'reminders': {
+              'useDefault': false,
+              'overrides': [
+                {'method': 'email', 'minutes': 24 * 60},
+                {'method': 'popup', 'minutes': 24 * 60},
+              ],
+            }
+          };
+          calendar.events.insert({
+            auth: oauth2Client,
+            calendarId: 'primary',
+            resource: event,
+          }, function(err, event) {
+            if (err) {
+              console.log('There was an error contacting the Calendar service: ' + err);
+              return;
+            }
+            console.log('Event created: %s', event.htmlLink);
+            res.redirect('/');
+          });
+      }
       }
     })
-    var text = parsed.original_message.text
-    var split = text.split(':')
-    var subject = split[1].split(' ')
-    subject.pop()
-    subject.shift()
-    subject = subject.join(' ')
-    var date = split[2].split(' ')[1]
-    if (response === 'scheduleReminder') {
-      console.log('This is your event with date: ', date);
-      console.log('This is your subject: ', subject);
-      var day = new Date(date)
-      var tomorrow = new Date();
-      tomorrow.setDate(day.getDate()+1);
-      console.log('these are ur days!!!!', day, tomorrow);
-      var event = {
-        'summary': subject,
-        'start': {
-          'date': day,
-          'timeZone': 'America/Los_Angeles',
-        },
-        'end': {
-          'date': tomorrow,
-          'timeZone': 'America/Los_Angeles',
-        },
-        'reminders': {
-          'useDefault': false,
-          'overrides': [
-            {'method': 'email', 'minutes': 24 * 60},
-            {'method': 'popup', 'minutes': 24 * 60},
-          ],
-        }
-      };
-
-      calendar.events.insert({
-        auth: oauth2Client,
-        calendarId: 'primary',
-        resource: event,
-      }, function(err, event) {
-        if (err) {
-          console.log('There was an error contacting the Calendar service: ' + err);
-          return;
-        }
-        console.log('Event created: %s', event.htmlLink);
-        res.redirect('/');
-      });
-    }
   })
   return router;
 }
