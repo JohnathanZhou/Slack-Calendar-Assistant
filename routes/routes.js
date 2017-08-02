@@ -12,7 +12,7 @@ var Reminder = models.Reminder;
 var Task = models.Task;
 var Meeting = models.Meeting;
 var addReminder = require('../addReminder');
-var addMeeting = require('../addMeeting');
+// var addMeeting = require('../addMeeting');
 mongoose.connect(connect);
 
 function allRoutes (rtm, web, message) {

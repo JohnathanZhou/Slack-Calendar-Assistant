@@ -48,8 +48,8 @@ function addMeeting (web, date, subject, oauth2Client, message, id) {
   // make a new meeting event to be inserted onto Google Calendar
   var event = {
     'summary': ,
-    'location': ,
-    'description': ,
+    'location': || '',
+    'description': || '',
     'start': {
       'dateTime': ,
       'timeZone': 'America/Los_Angeles',
