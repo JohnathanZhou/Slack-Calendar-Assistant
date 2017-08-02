@@ -1,4 +1,42 @@
+// function sendMessageToSlackResponseURL(responseURL, JSONmessage){
+//     var postOptions = {
+//         uri: responseURL,
+//         method: 'POST',
+//         headers: {
+//             'Content-type': 'application/json'
+//         },
+//         json: JSONmessage
+//     }
+//     request(postOptions, (error, response, body) => {
+//         if (error){
+//             console.log("CANT SENT RESPONSE YIKES")
+//         }
+//     })
+// }
 
+// rtm.on(RTM_EVENTS.MESSAGE, function handleRtmMessage(message) {
+//   if (message.subtype === 'bot_message') {
+//     return;
+//   }
+//   else {
+//     var slackUsername = rtm.dataStore.getUserById(message.user);
+//     if (slackUsername) {
+//       postAI(message)
+//       .then((data) =>
+//         {
+//           console.log('THIS IS THE TEST FUNCTION IT SHOULD BE BOOLEAN: ',test);
+//         const msg = data.data.result.fulfillment.speech
+//         console.log('THIS IS YOUR DATA: ', msg)
+//         confirmMessage(message.channel, msg)
+//       })
+//       .catch((err) => (
+//         console.log('error ', err)))
+//     }
+//     else {
+//         web.chat.postMessage(message.channel, process.env.WEBHOOK_URL+'/auth')
+//     }
+//   }
+// })
 
 
 

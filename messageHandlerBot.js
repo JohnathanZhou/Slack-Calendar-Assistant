@@ -42,25 +42,7 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(express.static(path.join(__dirname, 'public')));
 
-// function sendMessageToSlackResponseURL(responseURL, JSONmessage){
-//     var postOptions = {
-//         uri: responseURL,
-//         method: 'POST',
-//         headers: {
-//             'Content-type': 'application/json'
-//         },
-//         json: JSONmessage
-//     }
-//     request(postOptions, (error, response, body) => {
-//         if (error){
-//             console.log("CANT SENT RESPONSE YIKES")
-//         }
-//     })
-// }
-
 const postAI = function(message) {
-  console.log('inside post request');
-
   // curl 'https://api.api.ai/api/query?v=20150910&query=hi&lang=en&sessionId=bad504f3-0f2c-463e-8d34-d9097fe24091&timezone=2017-08-01T10:53:53-0700' -H 'Authorization:Bearer 62a307990113474eade3e4a3a7472e4f'
   return axios.post('https://api.api.ai/v1/query?v=20150910', {
       query: message.text,
@@ -77,7 +59,6 @@ const postAI = function(message) {
 const confirmMessage = function(channel, message) {
   if (message.includes("set!")) {
     // web.chat.postMessage(channel, message, web.chat.postMessage(channel, message)
-    console.log('It works!');
     web.chat.postMessage(channel, message+' Confirm that this event is ok? ', { "attachments": [
           {
               "fallback": "Unable to set calendar event",
@@ -110,9 +91,6 @@ const confirmMessage = function(channel, message) {
       console.log('Error:', err);
     } else {
       console.log('Message sent: ', res);
-      //USER INFO FOR MODEL:
-      // var user = rtm.dataStore.getUserById(message.user);
-      // console.log('HERES A BUNCH OF INFO: slackID: ', user.id, 'slackUsername: ', user.name, 'slackEmail: ', user.profile.email);
     }
     })
   }
@@ -121,38 +99,13 @@ const confirmMessage = function(channel, message) {
   }
 }
 
-
-// rtm.on(RTM_EVENTS.MESSAGE, function handleRtmMessage(message) {
-//   if (message.subtype === 'bot_message') {
-//     return;
-//   }
-//   else {
-//     var slackUsername = rtm.dataStore.getUserById(message.user);
-//     if (slackUsername) {
-//       postAI(message)
-//       .then((data) =>
-//         {
-//           console.log('THIS IS THE TEST FUNCTION IT SHOULD BE BOOLEAN: ',test);
-//         const msg = data.data.result.fulfillment.speech
-//         console.log('THIS IS YOUR DATA: ', msg)
-//         confirmMessage(message.channel, msg)
-//       })
-//       .catch((err) => (
-//         console.log('error ', err)))
-//     }
-//     else {
-//         web.chat.postMessage(message.channel, process.env.WEBHOOK_URL+'/auth')
-//     }
-//   }
-// })
-
 rtm.on(RTM_EVENTS.MESSAGE, function handleRtmMessage(message) {
   app.use('/', routes(rtm, web, message));
+
   if (message.subtype === 'bot_message') {
     return;
   }
   else {
-    //USER INFO FOR MODEL:
     var slackUser = rtm.dataStore.getUserById(message.user);
     //console.log('HERES A BUNCH OF INFO: slackID: ', user.id, 'slackUsername: ', user.name, 'slackEmail: ', user.profile.email);
 
@@ -188,15 +141,6 @@ rtm.on(RTM_EVENTS.MESSAGE, function handleRtmMessage(message) {
     });
   }
 });
-
-// app.post('/interactive', urlencodedParser, (req, res) => {
-//   var parsed = JSON.parse(req.body.payload);
-//   var response = parsed.actions[0].value;
-//   if (response === 'scheduleReminder') {
-//     console.log('hey its me im here')
-//   }
-//   // make calendar event here if response is yes
-// })
 
 rtm.on(RTM_EVENTS.REACTION_ADDED, function handleRtmReactionAdded(reaction) {
   console.log('Reaction added:', reaction);
