@@ -6,55 +6,37 @@ mongoose.connect(connect);
 var models = require('./models/models');
 var Meeting = models.Meeting;
 
-function addMeeting () {
-  // split the date into the right format for the end.date
-  // var day = new Date(date)
-  // var tomorrow = new Date();
-  // tomorrow.setDate(day.getDate()+1);
-  // var endYear = tomorrow.getFullYear()
-  // var endMonth = tomorrow.getMonth()
-  // endMonth = parseInt(endMonth) + 1
-  // if (parseInt(endMonth) < 10) {
-  //   endMonth = '0'+endMonth
-  // }
-  // var endDay = tomorrow.getDate()
-  // endDay = parseInt(endDay) + 1
-  // if (parseInt(endDay) < 10) {
-  //   endDay = '0'+endDay
-  // }
-
+function addMeeting (web, oauth2Client, date, time, subject) {
   // make a new meeting model in mLab
-  new Meeting ({
-    day: ,
-    time: ,
-    invitees: ,
-    subject: ,
-    location: ,
-    length: ,
-    status: ,
-    requesterID:
-  }).save();
+  // new Meeting ({
+  //   day: ,
+  //   time: ,
+  //   invitees: ,
+  //   subject: ,
+  //   location: ,
+  //   length: ,
+  //   status: ,
+  //   requesterID:
+  // }).save();
 
   // make a new meeting event to be inserted onto Google Calendar
   var event = {
-    'summary': ,
-    'location': || '',
-    'description': || '',
+    'summary': subject,
     'start': {
-      'dateTime': ,
+      'dateTime': date + "T" + time,
       'timeZone': 'America/Los_Angeles',
     },
     'end': {
-      'dateTime': ,
+      'dateTime': date + "T17:30:00",
       'timeZone': 'America/Los_Angeles',
     },
     // 'recurrence': [
     //   'RRULE:FREQ=DAILY;COUNT=2'
     // ],
-    'attendees': [
-      {'email': ''},
-      {'email': ''},
-    ],
+    // 'attendees': [
+    //   {'email': ''},
+    //   {'email': ''},
+    // ],
     'reminders': {
       'useDefault': false,
       'overrides': [

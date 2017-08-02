@@ -12,7 +12,7 @@ var token = process.env.SLACK_API_TOKEN || '';
 var url = process.env.WEBHOOK_URL || '';
 var web = new WebClient(token);
 var WebHook = new IncomingWebhook(url)
-var rtm = new RtmClient(token, { logLevel: 'debug' });
+var rtm = new RtmClient(token);
 
 // Express installs
 var express = require('express');
@@ -109,25 +109,25 @@ const confirmMessage = function(channel, message) {
               "attachment_type": "default",
               "actions": [
                 {
-                    "name": "reminder",
+                    "name": "meeting",
                     "text": "Yes",
                     "type": "button",
-                    "value": "scheduleReminder",
+                    "value": "scheduleMeeting",
                     "confirm": {
                       "title": "Are you sure?",
-                      "text": "This will add a calendar reminder to your google account",
+                      "text": "This will add a calendar meeting to your google account",
                       "ok_text": "Yes",
                       "dismiss_text": "No"
                     }
                 },
                 {
-                    "name": "reminder",
+                    "name": "meeting",
                     "text": "No",
                     "type": "button",
-                    "value": "dontScheduleReminder",
+                    "value": "dontScheduleMeeting",
                     "confirm": {
                       "title": "Are you sure you want to cancel?",
-                      "text": "This reminder will not be saved",
+                      "text": "This meeting will not be saved",
                       "ok_text": "Yes",
                       "dismiss_text": "No"
                     }
@@ -152,7 +152,8 @@ rtm.on(RTM_EVENTS.MESSAGE, function handleRtmMessage(message) {
   app.use('/', routes(rtm, web, message));
   var newMessage = message.text
   // console.log('THIS I SUSER MESSAGE: ', userMessage);
-  if (message.bot_id || (message.message && message.message.bot_id)) {
+  var dm = rtm.dataStore.getDMByUserId(message.user);
+  if (!dm || dm.id !== message.channel || message.type !== 'message') {
     return;
   }
   else {
@@ -164,39 +165,6 @@ rtm.on(RTM_EVENTS.MESSAGE, function handleRtmMessage(message) {
         console.log(err);
       } else if (user) {
         if (user.google) {
-          // var splitMessage = userMessage.split(' ')
-          // var newMessage = []
-          // splitMessage.map((item, index) => {
-          //   console.log('these should be equal!', index, splitMessage.length -1);
-          //   if (item.includes('@')) {
-          //     var slackID = item.slice(2, item.length)
-          //     User.findOne({slackID: slackID}, function(err, user) {
-          //       if (err) {
-          //         console.log('Error finding slack ID:', err);
-          //       }
-          //       else {
-          //         console.log('THIS IS THE SLACK USERNAME: ', user.slackUsername);
-          //         newMessage.push(user.slackUsername)
-          //       }
-          //     })
-          //   }
-          //   if (index === splitMessage.length-1) {
-          //     newMessage = newMessage.join(' ')
-          //     console.log('THIS IS YOUR NEW MESSAGE, SHOULD NOT HAVE @', newMessage);
-          //     postAI(newMessage, message.user)
-          //     .then((data) =>
-          //       {
-          //       const msg = data.data.result.fulfillment.speech
-          //       confirmMessage(message.channel, msg)
-          //     })
-          //     .catch((err) => (
-          //       console.log('error ', err)))
-          //   }
-          //   else {
-          //     console.log('this is normal, push this item:', item);
-          //     newMessage.push(item)
-          //   }
-          // })
           postAI(message.text, message.user)
           .then((data) =>
             {

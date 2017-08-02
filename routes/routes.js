@@ -73,7 +73,6 @@ function allRoutes (rtm, web, message) {
   });
 
   router.post('/interactive', urlencodedParser, (req, res) => {
-    console.log('HELLOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO');
     var parsed = JSON.parse(req.body.payload);
     console.log('THIS IS PAYLOAD ', parsed);
     var response = parsed.actions[0].value;
@@ -139,12 +138,54 @@ function allRoutes (rtm, web, message) {
               invitees.push(word);
             }
           });
-          console.log("this is invitees", invitees);
+          var inviteesID = [];
+          invitees.forEach(function(word) {
+            inviteesID.push(word.slice(5, word.length));
+          })
 
           var date = split[3].split(' ')[0];
           var time = split[4].split(' ')[0];
 
-          // addReminder();
+          inviteesID.forEach(function(slackID) {
+            User.findOne({slackID: slackID}, function (err, user) {
+              if (err) {
+                console.log(err);
+              } else if (user) {
+                console.log("THIS IS USER", user);
+                var oauth2Client = new OAuth2(
+                  process.env.GOOGLE_CLIENT_ID,
+                  process.env.GOOGLE_CLIENT_SECRET,
+                  process.env.DOMAIN + "/auth"
+                );
+                oauth2Client.setCredentials({
+                  access_token: user.google.access_token,
+                  refresh_token: user.google.refresh_token
+                });
+                // if the token expired, refresh the tokens and set the new tokens to the user model
+                var rightNow = new Date();
+                if (user.google.expiry_date - rightNow.getTime() <= 0 ) {
+                  oauth2Client.refreshAccessToken(function(err, tokens) {
+                    console.log('THIS IS TOKENS', tokens);
+                    oauth2Client.setCredentials({
+                      access_token: tokens.access_token,
+                      refresh_token: tokens.refresh_token
+                    });
+                    user.google = tokens;
+                    user.save(function(err, user) {
+                      if (err) {
+                        console.log(err);
+                      } else {
+                        addReminder(web, oauth2Client, date, time, subject);
+                      }
+                    });
+                  });
+                } else {
+                  addReminder(web, oauth2Client, date, time, subject);
+                }
+              }
+            })
+          })
+
         } else if (response === 'dontScheduleReminder' || response === 'dontScheduleMeeting') {
           var newMsg = JSON.parse(req.body.payload).original_message;
           newMsg.attachments.pop();
