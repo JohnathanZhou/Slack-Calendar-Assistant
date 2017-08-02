@@ -57,7 +57,7 @@ const postAI = function(message) {
 }
 
 const confirmMessage = function(channel, message) {
-  if (message.includes("set!")) {
+  if (message.includes("set!") && message.includes("Reminder")) {
     // web.chat.postMessage(channel, message, web.chat.postMessage(channel, message)
     web.chat.postMessage(channel, message+' Confirm that this event is ok? ', { "attachments": [
           {
