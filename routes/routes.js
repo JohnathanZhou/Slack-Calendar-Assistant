@@ -100,12 +100,15 @@ function allRoutes (rtm, web, message) {
         var date = split[2].split(' ')[1];
 
         if (response === 'scheduleReminder') {
-          JSON.parse(req.body.payload).original_message.attachments.pop();
-          addReminder(res, web, date, subject, oauth2Client, message, parsed.user.id);
+          addReminder(web, date, subject, oauth2Client, message, parsed.user.id);
+          var newMsg = JSON.parse(req.body.payload).original_message;
+          newMsg.attachments.pop();
+          res.send(newMsg)
         } else if (response === 'dontScheduleReminder') {
-          JSON.parse(req.body.payload).original_message.attachments.pop();
+          var newMsg = JSON.parse(req.body.payload).original_message;
+          newMsg.attachments.pop();
+          res.send(newMsg)
           web.chat.postMessage(message.channel, "You've cancelled the request");
-          res.end();
         }
       }
     })

@@ -6,7 +6,7 @@ mongoose.connect(connect);
 var models = require('./models/models');
 var Task = models.Task;
 
-function addReminder (res, web, date, subject, oauth2Client, message, id) {
+function addReminder (web, date, subject, oauth2Client, message, id) {
   // split the date into the right format for the end.date
   var day = new Date(date)
   var tomorrow = new Date();
@@ -62,7 +62,6 @@ function addReminder (res, web, date, subject, oauth2Client, message, id) {
       return;
     }
     web.chat.postMessage(message.channel, "Nice! Your event has been created at " + event.htmlLink);
-    res.end();
   });
 }
 
