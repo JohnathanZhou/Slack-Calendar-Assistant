@@ -8,7 +8,7 @@ var bodyParser = require('body-parser');
 var google = require('googleapis');
 var checkToken = require('../checkToken');
 var OAuth2 = google.auth.OAuth2;
-
+var calendar = google.calendar('v3');
 var urlencodedParser = bodyParser.urlencoded({ extended: false });
 
 
@@ -57,7 +57,7 @@ function allRoutes (rtm, web) {
           } else {
             oauth2Client.setCredentials({
               access_token: tokens.access_token,
-              refresh_token: tokens.fresh_token
+              refresh_token: tokens.refresh_token
             });
             res.redirect('/auth/success');
           }
@@ -70,36 +70,75 @@ function allRoutes (rtm, web) {
     res.send("Congratulations! Authenticate with Google Calendar success!")
   });
 
-  // router.post('/interactive', urlencodedParser, (req, res) => {
-  //   console.log('this is req.body', req.body);
-  //   var parsed = JSON.parse(req.body.payload);
-  //   var response = parsed.actions[0].value;
-  //   if (response === 'scheduleReminder') {
-  //     console.log('wassuh');
-  //   }
-    // var tomorrow = new Date();
-    // tomorrow.setDate(task.day.getDate() + 1);
-    // var event = {
-    //   'summary': '',
-    //   'start': {
-    //     'date': '',
-    //     'timeZone': 'America/Los_Angeles',
-    //   },
-    //   'end': {
-    //     'date': '',
-    //     'timeZone': 'America/Los_Angeles',
-    //   },
-    //   'reminders': {
-    //     'useDefault': false,
-    //     'overrides': [
-    //       {'method': 'email', 'minutes': 24 * 60},
-    //       {'method': 'popup', 'minutes': 24 * 60},
-    //     ],
-    //   }
-    // };
-    //
-  // })
-  // })
+  router.post('/interactive', urlencodedParser, (req, res) => {
+    console.log('this is req.body', req.body);
+    var parsed = JSON.parse(req.body.payload);
+    var response = parsed.actions[0].value;
+    console.log('THIS IS THE PARSED STUFF: '+parsed.original_message.text);
+    var oauth2Client = new OAuth2(
+      process.env.GOOGLE_CLIENT_ID,
+      process.env.GOOGLE_CLIENT_SECRET,
+      process.env.DOMAIN + "/auth"
+    );
+    User.findOne({slackID: parsed.user.id}, function(err, user) {
+      if (err) {
+        console.log('error:', err);
+      }
+      else {
+        console.log('HERE ARE TOKENS: ', user.google.access_token, 'new space', user.google.refresh_token);
+        oauth2Client.setCredentials({
+          access_token: user.google.access_token,
+          refresh_token: user.google.refresh_token
+        });
+      }
+    })
+    var text = parsed.original_message.text
+    var split = text.split(':')
+    var subject = split[1].split(' ')
+    subject.pop()
+    subject.shift()
+    subject = subject.join(' ')
+    var date = split[2].split(' ')[1]
+    if (response === 'scheduleReminder') {
+      console.log('This is your event with date: ', date);
+      console.log('This is your subject: ', subject);
+      var day = new Date(date)
+      var tomorrow = new Date();
+      tomorrow.setDate(day.getDate()+1);
+      console.log('these are ur days!!!!', day, tomorrow);
+      var event = {
+        'summary': subject,
+        'start': {
+          'date': day,
+          'timeZone': 'America/Los_Angeles',
+        },
+        'end': {
+          'date': tomorrow,
+          'timeZone': 'America/Los_Angeles',
+        },
+        'reminders': {
+          'useDefault': false,
+          'overrides': [
+            {'method': 'email', 'minutes': 24 * 60},
+            {'method': 'popup', 'minutes': 24 * 60},
+          ],
+        }
+      };
+
+      calendar.events.insert({
+        auth: oauth2Client,
+        calendarId: 'primary',
+        resource: event,
+      }, function(err, event) {
+        if (err) {
+          console.log('There was an error contacting the Calendar service: ' + err);
+          return;
+        }
+        console.log('Event created: %s', event.htmlLink);
+        res.redirect('/');
+      });
+    }
+  })
   return router;
 }
 

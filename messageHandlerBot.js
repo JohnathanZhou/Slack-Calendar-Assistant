@@ -46,21 +46,21 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/', routes(rtm, web));
 
-function sendMessageToSlackResponseURL(responseURL, JSONmessage){
-    var postOptions = {
-        uri: responseURL,
-        method: 'POST',
-        headers: {
-            'Content-type': 'application/json'
-        },
-        json: JSONmessage
-    }
-    request(postOptions, (error, response, body) => {
-        if (error){
-            console.log("CANT SENT RESPONSE YIKES")
-        }
-    })
-}
+// function sendMessageToSlackResponseURL(responseURL, JSONmessage){
+//     var postOptions = {
+//         uri: responseURL,
+//         method: 'POST',
+//         headers: {
+//             'Content-type': 'application/json'
+//         },
+//         json: JSONmessage
+//     }
+//     request(postOptions, (error, response, body) => {
+//         if (error){
+//             console.log("CANT SENT RESPONSE YIKES")
+//         }
+//     })
+// }
 
 const postAI = function(message) {
   console.log('inside post request');
@@ -108,10 +108,9 @@ const confirmMessage = function(channel, message) {
       console.log('Error:', err);
     } else {
       console.log('Message sent: ', res);
-
       //USER INFO FOR MODEL:
-      var user = rtm.dataStore.getUserById(message.user);
-      console.log('HERES A BUNCH OF INFO: slackID: ', user.id, 'slackUsername: ', user.name, 'slackEmail: ', user.profile.email);
+      // var user = rtm.dataStore.getUserById(message.user);
+      // console.log('HERES A BUNCH OF INFO: slackID: ', user.id, 'slackUsername: ', user.name, 'slackEmail: ', user.profile.email);
     }
     })
   }
@@ -120,21 +119,6 @@ const confirmMessage = function(channel, message) {
   }
 }
 
-function sendMessageToSlackResponseURL(responseURL, JSONmessage){
-    var postOptions = {
-        uri: responseURL,
-        method: 'POST',
-        headers: {
-            'Content-type': 'application/json'
-        },
-        json: JSONmessage
-    }
-    request(postOptions, (error, response, body) => {
-        if (error){
-            console.log("CANT SENT RESPONSE YIKES")
-        }
-    })
-}
 
 // rtm.on(RTM_EVENTS.MESSAGE, function handleRtmMessage(message) {
 //   if (message.subtype === 'bot_message') {
@@ -204,15 +188,14 @@ rtm.on(RTM_EVENTS.MESSAGE, function handleRtmMessage(message) {
   }
 });
 
-app.post('/interactive', urlencodedParser, (req, res) => {
-  var parsed = JSON.parse(req.body.payload);
-  var response = parsed.actions[0].value;
-  if (response === 'scheduleReminder') {
-    console.log('hey its me im here')
-
-  }
-  // make calendar event here if response is yes
-})
+// app.post('/interactive', urlencodedParser, (req, res) => {
+//   var parsed = JSON.parse(req.body.payload);
+//   var response = parsed.actions[0].value;
+//   if (response === 'scheduleReminder') {
+//     console.log('hey its me im here')
+//   }
+//   // make calendar event here if response is yes
+// })
 
 rtm.on(RTM_EVENTS.REACTION_ADDED, function handleRtmReactionAdded(reaction) {
   console.log('Reaction added:', reaction);
