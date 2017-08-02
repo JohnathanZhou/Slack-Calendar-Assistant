@@ -149,10 +149,9 @@ function allRoutes (rtm, web, message) {
             resource: event,
           }, function(err, event) {
             if (err) {
-              console.log('There was an error contacting the Calendar service: ' + err);
+              web.chat.postMessage(message.channel, "There is an error creating schedule " + err);
               return;
             }
-            console.log('Event created: %s', event.htmlLink);
             web.chat.postMessage(message.channel, "Nice! Your event has been created at " + event.htmlLink);
             res.end();
           });
