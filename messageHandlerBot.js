@@ -94,6 +94,12 @@ const confirmMessage = function(channel, message) {
                     "text": "Yes",
                     "type": "button",
                     "value": "scheduleReminder",
+                    "confirm": {
+                      "title": "Are you sure?",
+                      "text": "This will add a calendar reminder to your google account",
+                      "ok_text": "Yes",
+                      "dismiss_text": "No"
+                    }
                 },
                 {
                     "name": "reminder",

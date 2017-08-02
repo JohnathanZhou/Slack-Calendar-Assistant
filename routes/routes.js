@@ -107,20 +107,20 @@ function allRoutes (rtm, web) {
           var startYear = day.getFullYear()
           var startMonth = day.getMonth()
           var startDay = day.getDate()
-          if (startDay < 10) {
+          if (parseInt(startDay) < 10) {
             startDay = '0'+startDay
           }
           var endYear = tomorrow.getFullYear()
           var endMonth = tomorrow.getMonth()
           var endDay = tomorrow.getDate()
-          if (endDay < 10) {
+          if (parseInt(endDay) < 10) {
             endDay = '0'+endDay
           }
           console.log('these are ur days!!!!', day, tomorrow);
           var event = {
             'summary': subject,
             'start': {
-              'date': startYear+'-'+startMonth+'-'+startDay,
+              'date': date,
               // startYear+'-'+startMonth+'-'+startDay
               'timeZone': 'America/Los_Angeles',
             },
@@ -147,7 +147,7 @@ function allRoutes (rtm, web) {
               return;
             }
             console.log('Event created: %s', event.htmlLink);
-            res.redirect('/');
+            res.end()
           });
       }
       }
