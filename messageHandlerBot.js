@@ -124,25 +124,38 @@ rtm.on(RTM_EVENTS.MESSAGE, function handleRtmMessage(message) {
         if (user.google) {
           // var splitMessage = userMessage.split(' ')
           // var newMessage = []
-          // splitMessage.map((item) => {
+          // splitMessage.map((item, index) => {
+          //   console.log('these should be equal!', index, splitMessage.length -1);
           //   if (item.includes('@')) {
-          //     var slackID = item.slice(2, item.length-1)
+          //     var slackID = item.slice(2, item.length)
+          //     User.findOne({slackID: slackID}, function(err, user) {
+          //       if (err) {
+          //         console.log('Error finding slack ID:', err);
+          //       }
+          //       else {
+          //         console.log('THIS IS THE SLACK USERNAME: ', user.slackUsername);
+          //         newMessage.push(user.slackUsername)
+          //       }
           //     })
           //   }
+          //   if (index === splitMessage.length-1) {
+          //     newMessage = newMessage.join(' ')
+          //     console.log('THIS IS YOUR NEW MESSAGE, SHOULD NOT HAVE @', newMessage);
+          //     postAI(newMessage, message.user)
+          //     .then((data) =>
+          //       {
+          //       const msg = data.data.result.fulfillment.speech
+          //       confirmMessage(message.channel, msg)
+          //     })
+          //     .catch((err) => (
+          //       console.log('error ', err)))
+          //   }
           //   else {
+          //     console.log('this is normal, push this item:', item);
           //     newMessage.push(item)
           //   }
           // })
-          // User.findOne({slackID: slackID}, function(err, user) {
-          //   if (err) {
-          //     console.log('Error finding slack ID:', err);
-          //   }
-          //   else {
-          //     console.log(user.slackUsername);
-          //     newMessage.push(user.slackUsername)
-          //   }
-          // console.log('THIS IS YOUR NEW MESSAGE, SHOULD NOT HAVE @', newMessage);
-          postAI(newMessage, message.user)
+          postAI(message.text, message.user)
           .then((data) =>
             {
             const msg = data.data.result.fulfillment.speech
