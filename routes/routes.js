@@ -4,15 +4,14 @@ var mongoose = require('mongoose');
 var connect = process.env.MONGODB_URI;
 var bodyParser = require('body-parser');
 var google = require('googleapis');
-var checkToken = require('../checkToken');
 var OAuth2 = google.auth.OAuth2;
-var calendar = google.calendar('v3');
 var urlencodedParser = bodyParser.urlencoded({ extended: false });
 var models = require('../models/models');
 var User = models.User;
 var Reminder = models.Reminder;
 var Task = models.Task;
 var Meeting = models.Meeting;
+var addReminder = require('../addReminder');
 mongoose.connect(connect);
 
 function allRoutes (rtm, web, message) {
@@ -89,72 +88,18 @@ function allRoutes (rtm, web, message) {
           oauth2Client.setCredentials({
           access_token: user.google.access_token,
           refresh_token: user.google.refresh_token
-        })})
-        var text = parsed.original_message.text
-        var split = text.split(':')
-        var subject = split[1].split(' ')
-        subject.pop()
-        subject.shift()
-        subject = subject.join(' ')
-        var date = split[2].split(' ')[1]
+        })});
+
+        var text = parsed.original_message.text;
+        var split = text.split(':');
+        var subject = split[1].split(' ');
+        subject.pop();
+        subject.shift();
+        subject = subject.join(' ');
+        var date = split[2].split(' ')[1];
+
         if (response === 'scheduleReminder') {
-          // split the date into the right format for the end.date
-          var day = new Date(date)
-          var tomorrow = new Date();
-          tomorrow.setDate(day.getDate()+1);
-          var endYear = tomorrow.getFullYear()
-          var endMonth = tomorrow.getMonth()
-          endMonth = parseInt(endMonth) + 1
-          if (parseInt(endMonth) < 10) {
-            endMonth = '0'+endMonth
-          }
-          var endDay = tomorrow.getDate()
-          endDay = parseInt(endDay) + 1
-          if (parseInt(endDay) < 10) {
-            endDay = '0'+endDay
-          }
-
-          // make a new task model in mLab
-          new Task ({
-            subject: subject,
-            day: date,
-            //eventID: String,
-            requesterID: parsed.user.id
-          }).save();
-
-          // make a new event to be inserted onto Google Calendar
-          var event = {
-            'summary': subject,
-            'start': {
-              'date': date,
-              // startYear+'-'+startMonth+'-'+startDay
-              'timeZone': 'America/Los_Angeles',
-            },
-            'end': {
-              'date': endYear+'-'+endMonth+'-'+endDay,
-              // endYear+'-'+endMonth+'-'+endDay
-              'timeZone': 'America/Los_Angeles',
-            },
-            'reminders': {
-              'useDefault': false,
-              'overrides': [
-                {'method': 'email', 'minutes': 24 * 60},
-                {'method': 'popup', 'minutes': 24 * 60},
-              ],
-            }
-          };
-          calendar.events.insert({
-            auth: oauth2Client,
-            calendarId: 'primary',
-            resource: event,
-          }, function(err, event) {
-            if (err) {
-              web.chat.postMessage(message.channel, "There is an error creating schedule " + err);
-              return;
-            }
-            web.chat.postMessage(message.channel, "Nice! Your event has been created at " + event.htmlLink);
-            res.end();
-          });
+          addReminder(res, web, date, subject, oauth2Client, message, parsed.user.id);
         }
       }
     })
