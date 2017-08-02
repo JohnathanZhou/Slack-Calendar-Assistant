@@ -6,43 +6,33 @@ mongoose.connect(connect);
 var models = require('./models/models');
 var Meeting = models.Meeting;
 
-function addMeeting (web, date, subject, oauth2Client, message, id) {
+function addMeeting () {
   // split the date into the right format for the end.date
-  var day = new Date(date)
-  var tomorrow = new Date();
-  tomorrow.setDate(day.getDate()+1);
-  var endYear = tomorrow.getFullYear()
-  var endMonth = tomorrow.getMonth()
-  endMonth = parseInt(endMonth) + 1
-  if (parseInt(endMonth) < 10) {
-    endMonth = '0'+endMonth
-  }
-  var endDay = tomorrow.getDate()
-  endDay = parseInt(endDay) + 1
-  if (parseInt(endDay) < 10) {
-    endDay = '0'+endDay
-  }
+  // var day = new Date(date)
+  // var tomorrow = new Date();
+  // tomorrow.setDate(day.getDate()+1);
+  // var endYear = tomorrow.getFullYear()
+  // var endMonth = tomorrow.getMonth()
+  // endMonth = parseInt(endMonth) + 1
+  // if (parseInt(endMonth) < 10) {
+  //   endMonth = '0'+endMonth
+  // }
+  // var endDay = tomorrow.getDate()
+  // endDay = parseInt(endDay) + 1
+  // if (parseInt(endDay) < 10) {
+  //   endDay = '0'+endDay
+  // }
 
   // make a new meeting model in mLab
   new Meeting ({
-    day: {
-      required: true,
-      type: String
-    },
-    time: {
-      required: true,
-      type: String
-    },
-    invitees: {
-      required: true,
-      type: String
-    },
-    subject: String,
-    location: String,
-    length: String,
-    status: String,
-    createdAt: String,
-    requesterID: String
+    day: ,
+    time: ,
+    invitees: ,
+    subject: ,
+    location: ,
+    length: ,
+    status: ,
+    requesterID:
   }).save();
 
   // make a new meeting event to be inserted onto Google Calendar
@@ -79,10 +69,10 @@ function addMeeting (web, date, subject, oauth2Client, message, id) {
     resource: event,
   }, function(err, event) {
     if (err) {
-      web.chat.postMessage(message.channel, "There is an error creating schedule " + err);
+      web.chat.postMessage(message.channel, "There is an error creating meeting " + err);
       return;
     }
-    web.chat.postMessage(message.channel, "Nice! Your event has been created at " + event.htmlLink);
+    web.chat.postMessage(message.channel, "Nice! Your meeting has been created at " + event.htmlLink);
   });
 }
 

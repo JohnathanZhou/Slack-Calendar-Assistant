@@ -106,10 +106,10 @@ const confirmMessage = function(channel, message) {
 }
 
 rtm.on(RTM_EVENTS.MESSAGE, function handleRtmMessage(message) {
-  console.log("HEREEEEEEEE: ", message)
+  //console.log("HEREEEEEEEE: ", message)
   app.use('/', routes(rtm, web, message));
-  var userMessage = message.text
-  console.log('THIS I SUSER MESSAGE: ', userMessage);
+  var newMessage = message.text
+  // console.log('THIS I SUSER MESSAGE: ', userMessage);
   if (message.bot_id || (message.message && message.message.bot_id)) {
     return;
   }
@@ -122,26 +122,26 @@ rtm.on(RTM_EVENTS.MESSAGE, function handleRtmMessage(message) {
         console.log(err);
       } else if (user) {
         if (user.google) {
-          var splitMessage = userMessage.split(' ')
-          var newMessage = []
-          splitMessage.map((item) => {
-            if (item.includes('@')) {
-              var slackID = item.slice(2, item.length-1)
-              })
-            }
-            else {
-              newMessage.push(item)
-            }
-          })
-          User.findOne({slackID: slackID}, function(err, user) {
-            if (err) {
-              console.log('Error finding slack ID:', err);
-            }
-            else {
-              console.log(user.slackUsername);
-              newMessage.push(user.slackUsername)
-            }
-          console.log('THIS IS YOUR NEW MESSAGE, SHOULD NOT HAVE @', newMessage);
+          // var splitMessage = userMessage.split(' ')
+          // var newMessage = []
+          // splitMessage.map((item) => {
+          //   if (item.includes('@')) {
+          //     var slackID = item.slice(2, item.length-1)
+          //     })
+          //   }
+          //   else {
+          //     newMessage.push(item)
+          //   }
+          // })
+          // User.findOne({slackID: slackID}, function(err, user) {
+          //   if (err) {
+          //     console.log('Error finding slack ID:', err);
+          //   }
+          //   else {
+          //     console.log(user.slackUsername);
+          //     newMessage.push(user.slackUsername)
+          //   }
+          // console.log('THIS IS YOUR NEW MESSAGE, SHOULD NOT HAVE @', newMessage);
           postAI(newMessage, message.user)
           .then((data) =>
             {

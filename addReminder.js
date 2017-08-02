@@ -58,10 +58,10 @@ function addReminder (web, date, subject, oauth2Client, message, id) {
     resource: event,
   }, function(err, event) {
     if (err) {
-      web.chat.postMessage(message.channel, "There is an error creating schedule " + err);
+      web.chat.postMessage(message.channel, "There is an error creating reminder " + err);
       return;
     }
-    web.chat.postMessage(message.channel, "Nice! Your event has been created at " + event.htmlLink);
+    web.chat.postMessage(message.channel, "Nice! Your reminder has been created at " + event.htmlLink);
   });
 }
 
