@@ -73,7 +73,9 @@ function allRoutes (rtm, web, message) {
   });
 
   router.post('/interactive', urlencodedParser, (req, res) => {
+    console.log('HELLOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO');
     var parsed = JSON.parse(req.body.payload);
+    console.log('THIS IS PAYLOAD ', parsed);
     var response = parsed.actions[0].value;
     var oauth2Client = new OAuth2(
       process.env.GOOGLE_CLIENT_ID,
@@ -97,7 +99,6 @@ function allRoutes (rtm, web, message) {
         var rightNow = new Date();
         if (user.google.expiry_date - rightNow.getTime() <= 0 ) {
           oauth2Client.refreshAccessToken(function(err, tokens) {
-            console.log("this is new tokens", tokens);
             oauth2Client.setCredentials({
               access_token: tokens.access_token,
               refresh_token: tokens.refresh_token
@@ -107,42 +108,43 @@ function allRoutes (rtm, web, message) {
           });
         }
 
-        var text = parsed.original_message.text;
-        var split = text.split(':');
-        var subject = split[1].split(' ');
-        subject.pop();
-        subject.shift();
-        subject = subject.join(' ');
-        var date = split[2].split(' ')[1];
-
         if (response === 'scheduleReminder') {
+          // parse the time and date and subject for the reminder
+          var text = parsed.original_message.text;
+          var split = text.split(':');
+          var subject = split[1].split(' ');
+          subject.pop();
+          subject.shift();
+          subject = subject.join(' ');
+          var date = split[2].split(' ')[1];
+
           addReminder(web, date, subject, oauth2Client, message, parsed.user.id);
           var newMsg = JSON.parse(req.body.payload).original_message;
           newMsg.attachments.pop();
           res.send(newMsg)
-        } else if (response === 'scheduleMeeting') {
-          // get the attendees and find them in the database. after we find each one set the oauth2Client to their token and then addMeeting
 
-          // if the invitee's token expired refresh their token.
-          // oauth2Client.setCredentials({
-          //   access_token: user.google.access_token,
-          //   refresh_token: user.google.refresh_token
-          // })
-          //
-          // // if the token expired, refresh the tokens and set the new tokens to the invitee user model
-          // var rightNow = new Date();
-          // if (user.google.expiry_date - rightNow.getTime() <= 0 ) {
-          //   oauth2Client.refreshAccessToken(function(err, tokens) {
-          //     console.log("this is new tokens", tokens);
-          //     oauth2Client.setCredentials({
-          //       access_token: tokens.access_token,
-          //       refresh_token: tokens.refresh_token
-          //     });
-          //     user.google = tokens;
-          //     user.save();
-          //   });
-          // }
-          addReminder();
+        } else if (response === 'scheduleMeeting') {
+          // parse invitees, time, date, and subject for the meeting
+
+          var text = parsed.original_message.text;
+          var split = text.split('=');
+          var subject = split[1].split(' ');
+          subject.pop();
+          subject = subject.join(' ');
+
+          var inviteesArray = split[2].split(' ');
+          var invitees = [];
+          inviteesArray.forEach(function(word) {
+            if (word.indexOf('@') !== -1) {
+              invitees.push(word);
+            }
+          });
+          console.log("this is invitees", invitees);
+
+          var date = split[3].split(' ')[0];
+          var time = split[4].split(' ')[0];
+
+          // addReminder();
         } else if (response === 'dontScheduleReminder' || response === 'dontScheduleMeeting') {
           var newMsg = JSON.parse(req.body.payload).original_message;
           newMsg.attachments.pop();

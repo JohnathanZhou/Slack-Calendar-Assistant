@@ -109,25 +109,25 @@ const confirmMessage = function(channel, message) {
               "attachment_type": "default",
               "actions": [
                 {
-                    "name": "meeting",
+                    "name": "reminder",
                     "text": "Yes",
                     "type": "button",
-                    "value": "scheduleMeeting",
+                    "value": "scheduleReminder",
                     "confirm": {
                       "title": "Are you sure?",
-                      "text": "This will add a calendar meeting to your google account",
+                      "text": "This will add a calendar reminder to your google account",
                       "ok_text": "Yes",
                       "dismiss_text": "No"
                     }
                 },
                 {
-                    "name": "meeting",
+                    "name": "reminder",
                     "text": "No",
                     "type": "button",
-                    "value": "dontScheduleMeeting",
+                    "value": "dontScheduleReminder",
                     "confirm": {
                       "title": "Are you sure you want to cancel?",
-                      "text": "This meeting will not be saved",
+                      "text": "This reminder will not be saved",
                       "ok_text": "Yes",
                       "dismiss_text": "No"
                     }
