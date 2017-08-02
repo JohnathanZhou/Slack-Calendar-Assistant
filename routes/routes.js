@@ -104,19 +104,18 @@ function allRoutes (rtm, web) {
           var day = new Date(date)
           var tomorrow = new Date();
           tomorrow.setDate(day.getDate()+1);
-          var startYear = day.getFullYear()
-          var startMonth = day.getMonth()
-          var startDay = day.getDate()
-          if (parseInt(startDay) < 10) {
-            startDay = '0'+startDay
-          }
           var endYear = tomorrow.getFullYear()
           var endMonth = tomorrow.getMonth()
+          endMonth = parseInt(endMonth) + 1
+          if (parseInt(endMonth) < 10) {
+            endMonth = '0'+endMonth
+          }
           var endDay = tomorrow.getDate()
+          endDay = parseInt(endDay) + 1
           if (parseInt(endDay) < 10) {
             endDay = '0'+endDay
           }
-          console.log('these are ur days!!!!', day, tomorrow);
+          console.log('these are your dates!', date, endYear+'-'+endMonth+'-'+endDay);
           var event = {
             'summary': subject,
             'start': {
