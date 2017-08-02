@@ -71,10 +71,8 @@ function allRoutes (rtm, web) {
   });
 
   router.post('/interactive', urlencodedParser, (req, res) => {
-    console.log('this is req.body', req.body);
     var parsed = JSON.parse(req.body.payload);
     var response = parsed.actions[0].value;
-    console.log('THIS IS THE PARSED STUFF: '+parsed.original_message.text);
     var oauth2Client = new OAuth2(
       process.env.GOOGLE_CLIENT_ID,
       process.env.GOOGLE_CLIENT_SECRET,
@@ -85,7 +83,6 @@ function allRoutes (rtm, web) {
         console.log('error:', err);
       }
       else {
-        console.log('HERE ARE TOKENS: ', user.google.access_token, 'new space', user.google.refresh_token);
         oauth2Client.refreshAccessToken(function(err, tokens) {
           oauth2Client.setCredentials({
           access_token: user.google.access_token,
@@ -99,8 +96,6 @@ function allRoutes (rtm, web) {
         subject = subject.join(' ')
         var date = split[2].split(' ')[1]
         if (response === 'scheduleReminder') {
-          console.log('This is your event with date: ', date);
-          console.log('This is your subject: ', subject);
           var day = new Date(date)
           var tomorrow = new Date();
           tomorrow.setDate(day.getDate()+1);
@@ -115,7 +110,6 @@ function allRoutes (rtm, web) {
           if (parseInt(endDay) < 10) {
             endDay = '0'+endDay
           }
-          console.log('these are your dates!', date, endYear+'-'+endMonth+'-'+endDay);
           var event = {
             'summary': subject,
             'start': {
@@ -154,7 +148,5 @@ function allRoutes (rtm, web) {
   })
   return router;
 }
-
-
 
 module.exports = allRoutes;

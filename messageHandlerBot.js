@@ -169,7 +169,6 @@ rtm.on(RTM_EVENTS.MESSAGE, function handleRtmMessage(message) {
           .then((data) =>
             {
             const msg = data.data.result.fulfillment.speech
-            console.log('THIS IS YOUR DATA: ', msg)
             confirmMessage(message.channel, msg)
           })
           .catch((err) => (
@@ -208,7 +207,6 @@ rtm.on(RTM_EVENTS.REACTION_ADDED, function handleRtmReactionAdded(reaction) {
 });
 
 rtm.on(RTM_EVENTS.REACTION_REMOVED, function handleRtmReactionRemoved(reaction) {
-
   console.log('Reaction removed:', reaction);
 });
 
