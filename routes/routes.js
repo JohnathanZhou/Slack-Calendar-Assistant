@@ -101,7 +101,8 @@ function allRoutes (rtm, web, message) {
 
         if (response === 'scheduleReminder') {
           JSON.parse(req.body.payload).original_message.attachments.pop();
-          addReminder(res, web, date, subject, oauth2Client, message, parsed.user.id);
+          addReminder(web, date, subject, oauth2Client, message, parsed.user.id);
+          res.end();
         } else if (response === 'dontScheduleReminder') {
           JSON.parse(req.body.payload).original_message.attachments.pop();
           web.chat.postMessage(message.channel, "You've cancelled the request");
