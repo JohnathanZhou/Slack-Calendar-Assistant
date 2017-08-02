@@ -99,6 +99,48 @@ const confirmMessage = function(channel, message) {
       console.log('Message sent: ', res);
     }
     })
+  } else if (message.includes("set!") && message.includes("Meeting")) {
+    // web.chat.postMessage(channel, message, web.chat.postMessage(channel, message)
+    web.chat.postMessage(channel, message+' Confirm that this event is ok? ', { "attachments": [
+          {
+              "fallback": "Unable to set calendar event",
+              "callback_id": "wopr_game",
+              "color": "#3AA3E3",
+              "attachment_type": "default",
+              "actions": [
+                {
+                    "name": "meeting",
+                    "text": "Yes",
+                    "type": "button",
+                    "value": "scheduleMeeting",
+                    "confirm": {
+                      "title": "Are you sure?",
+                      "text": "This will add a calendar meeting to your google account",
+                      "ok_text": "Yes",
+                      "dismiss_text": "No"
+                    }
+                },
+                {
+                    "name": "meeting",
+                    "text": "No",
+                    "type": "button",
+                    "value": "dontScheduleMeeting",
+                    "confirm": {
+                      "title": "Are you sure you want to cancel?",
+                      "text": "This meeting will not be saved",
+                      "ok_text": "Yes",
+                      "dismiss_text": "No"
+                    }
+                },
+            ]
+          }
+      ]}, function(err, res) {
+    if (err) {
+      console.log('Error:', err);
+    } else {
+      console.log('Message sent: ', res);
+    }
+    })
   }
   else {
     web.chat.postMessage(channel, message)
