@@ -42,8 +42,6 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(express.static(path.join(__dirname, 'public')));
 
-app.use('/', routes(rtm, web));
-
 // function sendMessageToSlackResponseURL(responseURL, JSONmessage){
 //     var postOptions = {
 //         uri: responseURL,
@@ -149,7 +147,7 @@ const confirmMessage = function(channel, message) {
 // })
 
 rtm.on(RTM_EVENTS.MESSAGE, function handleRtmMessage(message) {
-  console.log('Message:', message);
+  app.use('/', routes(rtm, web, message));
   if (message.subtype === 'bot_message') {
     return;
   }
