@@ -82,7 +82,13 @@ const confirmMessage = function(channel, message) {
                     "name": "reminder",
                     "text": "No",
                     "type": "button",
-                    "value": "dontScheduleReminder"
+                    "value": "dontScheduleReminder",
+                    "confirm": {
+                      "title": "Are you sure you want to cancel?",
+                      "text": "This reminder will not be saved",
+                      "ok_text": "Yes",
+                      "dismiss_text": "No"
+                    }
                 },
             ]
           }

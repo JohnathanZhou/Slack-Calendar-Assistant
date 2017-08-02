@@ -72,6 +72,7 @@ function allRoutes (rtm, web, message) {
   });
 
   router.post('/interactive', urlencodedParser, (req, res) => {
+    console.log("HERE: ", JSON.parse(req.body.payload));
     var parsed = JSON.parse(req.body.payload);
     var response = parsed.actions[0].value;
     var oauth2Client = new OAuth2(
@@ -99,7 +100,12 @@ function allRoutes (rtm, web, message) {
         var date = split[2].split(' ')[1];
 
         if (response === 'scheduleReminder') {
+          JSON.parse(req.body.payload).original_message.attachments.pop();
           addReminder(res, web, date, subject, oauth2Client, message, parsed.user.id);
+        } else if (response === 'dontScheduleReminder') {
+          JSON.parse(req.body.payload).original_message.attachments.pop();
+          web.chat.postMessage(message.channel, "You've cancelled the request");
+          res.end();
         }
       }
     })
