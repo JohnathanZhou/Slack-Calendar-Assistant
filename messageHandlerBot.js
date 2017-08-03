@@ -24,6 +24,7 @@ var connect = process.env.MONGODB_URI;
 var axios = require('axios');
 var models = require('./models/models');
 var routes = require('./routes/routes');
+var checkConflict = require('./handleConflict');
 var User = models.User;
 
 var urlencodedParser = bodyParser.urlencoded({ extended: false });
@@ -57,6 +58,7 @@ const postAI = function(message, userId) {
 }
 
 const parseMessage = function(message) {
+  console.log("parsedMessage message", message);
   var split = message.split('=');
   var subject = split[1].split(' ');
   subject.pop();
@@ -68,21 +70,17 @@ const parseMessage = function(message) {
       invitees.push(word);
     }
   });
-  var inviteesID = [];
-  invitees.forEach(function(word) {
-    inviteesID.push(word.slice(5, word.length));
+  var inviteesID = invitees.map(function(word) {
+    return word.slice(2, word.length);
   })
   var date = split[3].split(' ')[0];
   var time = split[4].split(' ')[0];
-  var userPromises = inviteesID.map(function(id) {
-    return User.findOne({slackID: id}).exec();
-  })
+
   return {
     'date': date,
     'subject': subject,
-    'invitees': inviteeID,
-    'time': time,
-    'usersPromises': userPromises
+    'inviteesID': inviteesID,
+    'time': time
   }
 }
 
@@ -130,8 +128,13 @@ const confirmMessage = function(channel, message, user) {
     }
     })
   } else if (message.includes("set!") && message.includes("Meeting")) {
-    // var messageObj = parseMessage(message)
-    // var checkedConflict = checkConflict(messageObj, user)
+    var messageObj = parseMessage(message);
+    var eventTimeList;
+    checkConflict(messageObj, user)
+      .then((list) => {
+        eventTimeList = list;
+      })
+    console.log("this is eventtime list", eventTimeList);
     // if (checkedConflict.conflict) {
       //     findFreeTimes(checkedConflict.returnValue)
       // }
