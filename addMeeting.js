@@ -18,6 +18,25 @@ function addMeeting (web, message, oauth2Client, date, time, subject, userID, in
   //   status: ,
   //   requesterID:
   // }).save();
+  var parsedTime = time.split(':');
+  var endTimeMin = 0;
+  var endHour = 0;
+  if (parseInt(parsedTime[1]) === 30) {
+    endHour = parsedTime[0] + 1;
+  } else if (parseInt(parsedTime[1]) > 30) {
+    endTimeMin = parseInt(parsedTime[1]) + 30 - 60;
+    endHour = parseInt(parsedTime[0]) + 1;
+  } else {
+    endTimeMin = parseInt(parsedTime[1]) + 30;
+    endHour = parseInt(parsedTime[0]);
+  }
+
+  if (endHour < 10) {
+    endHour = "0" + endHour;
+  }
+  if (endTimeMin < 10) {
+    endTimeMin = "0" + endTimeMin;
+  }
 
   // make a new meeting event to be inserted onto Google Calendar
   var event = {
@@ -27,7 +46,7 @@ function addMeeting (web, message, oauth2Client, date, time, subject, userID, in
       'timeZone': 'America/Los_Angeles',
     },
     'end': {
-      'dateTime': date + "T19:30:00",
+      'dateTime': date + "T" + endHour + ":" + endTimeMin + ":00",
       'timeZone': 'America/Los_Angeles',
     },
     // 'recurrence': [
@@ -55,7 +74,7 @@ function addMeeting (web, message, oauth2Client, date, time, subject, userID, in
       return;
     }
     if (userID === inviteeID) {
-      web.chat.postMessage(message.channel, "Nice! Your reminder has been created at " + event.htmlLink);
+      web.chat.postMessage(message.channel, "Nice! Your meeting has been created at " + event.htmlLink);
     }
   });
 }

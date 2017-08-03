@@ -157,25 +157,28 @@ function allRoutes (rtm, web, message) {
                   process.env.GOOGLE_CLIENT_SECRET,
                   process.env.DOMAIN + "/auth"
                 );
+                console.log('this is invitee', invitee);
+                console.log("this is cred before", oauth2Client);
                 oauth2Client.setCredentials({
                   access_token: invitee.google.access_token,
                   refresh_token: invitee.google.refresh_token
                 });
+                console.log("this is cred after", oauth2Client);
                 // if the token expired, refresh the tokens and set the new tokens to the user model
                 var rightNow = new Date();
                 if (invitee.google.expiry_date - rightNow.getTime() <= 0 ) {
                   oauth2Client.refreshAccessToken(function(err, tokens) {
                     oauth2Client.setCredentials({
-                      access_token: tokens.access_token,
-                      refresh_token: tokens.refresh_token
+                      access_token: tokens ? tokens.access_token : invitee.google.access_token,
+                      refresh_token: tokens? tokens.refresh_token : invitee.google.refresh_token
                     });
                     invitee.google = tokens;
                     invitee.save(function(err, invitee) {
                       if (err) {
                         console.log(err);
-                      } else {
-                        addMeeting(web, message, oauth2Client, date, time, subject, parsed.user.id, slackID);
+                        return;
                       }
+                      addMeeting(web, message, oauth2Client, date, time, subject, parsed.user.id, slackID);
                     });
                   });
                 } else {
