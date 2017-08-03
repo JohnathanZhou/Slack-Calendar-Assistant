@@ -56,6 +56,36 @@ const postAI = function(message, userId) {
   )
 }
 
+const parseMessage = function(message) {
+  var split = message.split('=');
+  var subject = split[1].split(' ');
+  subject.pop();
+  subject = subject.join(' ');
+  var inviteesArray = split[2].split(' ');
+  var invitees = [];
+  inviteesArray.forEach(function(word) {
+    if (word.indexOf('@') !== -1) {
+      invitees.push(word);
+    }
+  });
+  var inviteesID = [];
+  invitees.forEach(function(word) {
+    inviteesID.push(word.slice(5, word.length));
+  })
+  var date = split[3].split(' ')[0];
+  var time = split[4].split(' ')[0];
+  var userPromises = inviteesID.map(function(id) {
+    return User.findOne({slackID: id}).exec();
+  })
+  return {
+    'date': date,
+    'subject': subject,
+    'invitees': inviteeID,
+    'time': time,
+    'usersPromises': userPromises
+  }
+}
+
 const confirmMessage = function(channel, message, user) {
   if (message.includes("set!") && message.includes("Reminder")) {
     // web.chat.postMessage(channel, message, web.chat.postMessage(channel, message)
@@ -100,10 +130,12 @@ const confirmMessage = function(channel, message, user) {
     }
     })
   } else if (message.includes("set!") && message.includes("Meeting")) {
-    // var checkedConflct = checkConflict(message, user)
-    // if (checkedConflct.conflict) {
-      //     handleMessage(checkedConflict.returnValue)
+    // var messageObj = parseMessage(message)
+    // var checkedConflict = checkConflict(messageObj, user)
+    // if (checkedConflict.conflict) {
+      //     findFreeTimes(checkedConflict.returnValue)
       // }
+      // else{}
     web.chat.postMessage(channel, message+' Confirm that this event is ok? ', { "attachments": [
           {
               "fallback": "Unable to set calendar event",

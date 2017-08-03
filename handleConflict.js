@@ -7,29 +7,8 @@ var models = require('./models/models');
 var Meeting = models.Meeting;
 
 
-function checkConflict(message, user) {
-  var split = message.split('=');
-  var subject = split[1].split(' ');
-  subject.pop();
-  subject = subject.join(' ');
-
-  var inviteesArray = split[2].split(' ');
-  var invitees = [];
-  inviteesArray.forEach(function(word) {
-    if (word.indexOf('@') !== -1) {
-      invitees.push(word);
-    }
-  });
-  var inviteesID = [];
-  invitees.forEach(function(word) {
-    inviteesID.push(word.slice(5, word.length));
-  })
-  var date = split[3].split(' ')[0];
-  var time = split[4].split(' ')[0];
-  var userPromises = inviteesID.map(function(id) {
-    return User.findOne({slackID: id}).exec();
-  })
-  Promise.all(userPromises)
+function checkConflict(messageObj, user) {
+  Promise.all(messageObj.userPromises)
     .then(function(userObjects) {
       var googleTokens = userObjects.map((user) => {
         return user.google
@@ -39,8 +18,7 @@ function checkConflict(message, user) {
     })
     .then((authTokens) => {
       authTokens.map((token) => {
-
-
+        checkBusy(token)
       })
     })
 }
@@ -48,8 +26,8 @@ function checkConflict(message, user) {
 function checkBusy(token) {
   axios.post('https://wwww.googleapis.com/calendar/v3/freeBusy',
   {
-    "timeMin": datetime,
-    "timeMax": datetime,
+    "timeMin": date + "T" + time,
+    "timeMax": date + "T" + endHour + ":" + endTimeMin + ":00",
     "items": [
       {
         "id": string
@@ -57,7 +35,7 @@ function checkBusy(token) {
     ]
   })
   .then((data) => {
-    
+
   })
 }
 
