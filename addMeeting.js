@@ -6,18 +6,8 @@ mongoose.connect(connect);
 var models = require('./models/models');
 var Meeting = models.Meeting;
 
-function addMeeting (web, message, oauth2Client, date, time, subject, userID, inviteeID) {
-  // make a new meeting model in mLab
-  // new Meeting ({
-  //   day: ,
-  //   time: ,
-  //   invitees: ,
-  //   subject: ,
-  //   location: ,
-  //   length: ,
-  //   status: ,
-  //   requesterID:
-  // }).save();
+function addMeeting (web, message, oauth2Client, date, time, subject, userID, inviteeID, meetingEmails) {
+
   var parsedTime = time.split(':');
   var endTimeMin = 0;
   var endHour = 0;
@@ -38,6 +28,20 @@ function addMeeting (web, message, oauth2Client, date, time, subject, userID, in
     endTimeMin = "0" + endTimeMin;
   }
 
+  var emailArray = meetingEmails.map(function(eachEmail) {
+    return {'email': eachEmail};
+  });
+
+  // make a new meeting model in mLab
+  // new Meeting ({
+  //   day: date,
+  //   time: time,
+  //   invitees: ,
+  //   subject: subject,
+  //   length: 30,
+  //   requesterID: userID
+  // }).save();
+
   // make a new meeting event to be inserted onto Google Calendar
   var event = {
     'summary': subject,
@@ -49,13 +53,7 @@ function addMeeting (web, message, oauth2Client, date, time, subject, userID, in
       'dateTime': date + "T" + endHour + ":" + endTimeMin + ":00",
       'timeZone': 'America/Los_Angeles',
     },
-    // 'recurrence': [
-    //   'RRULE:FREQ=DAILY;COUNT=2'
-    // ],
-    // 'attendees': [
-    //   {'email': ''},
-    //   {'email': ''},
-    // ],
+    'attendees': emailArray,
     'reminders': {
       'useDefault': false,
       'overrides': [

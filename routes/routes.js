@@ -13,6 +13,7 @@ var Task = models.Task;
 var Meeting = models.Meeting;
 var addReminder = require('../addReminder');
 var addMeeting = require('../addMeeting');
+mongoose.Promise = global.Promise;
 mongoose.connect(connect);
 
 function allRoutes (rtm, web, message) {
@@ -145,48 +146,50 @@ function allRoutes (rtm, web, message) {
           var time = split[4].split(' ')[0];
 
           // send it for the current actual bot user
-          addMeeting(web, message, oauth2Client, date, time, subject, parsed.user.id, parsed.user.id);
+          //addMeeting(web, message, oauth2Client, date, time, subject, parsed.user.id, parsed.user.id);
 
-          inviteesID.forEach(function(slackID) {
-            User.findOne({slackID: slackID}, function (err, invitee) {
-              if (err) {
-                console.log(err);
-              } else if (invitee) {
+          var userPromises = inviteesID.map(function(id) {
+            return User.findOne({slackID: id}).exec();
+          })
+          Promise.all(userPromises)
+            .then(function(userObjects) {
+              var meetingEmails = userObjects.map(function(eachUser) {
+                return eachUser.slackEmail;
+              })
+              meetingEmails.push(user.slackEmail);
+              // addMeeting for the current bot user
+              addMeeting(web, message, oauth2Client, date, time, subject, parsed.user.id, parsed.user.id, meetingEmails);
+
+              userObjects.forEach(function(eachUser) {
                 var oauth2Client = new OAuth2(
                   process.env.GOOGLE_CLIENT_ID,
                   process.env.GOOGLE_CLIENT_SECRET,
                   process.env.DOMAIN + "/auth"
                 );
-                console.log('this is invitee', invitee);
-                console.log("this is cred before", oauth2Client);
                 oauth2Client.setCredentials({
-                  access_token: invitee.google.access_token,
-                  refresh_token: invitee.google.refresh_token
+                  access_token: eachUser.google.access_token,
+                  refresh_token: eachUser.google.refresh_token
                 });
-                console.log("this is cred after", oauth2Client);
                 // if the token expired, refresh the tokens and set the new tokens to the user model
                 var rightNow = new Date();
-                if (invitee.google.expiry_date - rightNow.getTime() <= 0 ) {
+                if (eachUser.google.expiry_date - rightNow.getTime() <= 0 ) {
                   oauth2Client.refreshAccessToken(function(err, tokens) {
                     oauth2Client.setCredentials({
-                      access_token: tokens ? tokens.access_token : invitee.google.access_token,
-                      refresh_token: tokens? tokens.refresh_token : invitee.google.refresh_token
+                      access_token: tokens ? tokens.access_token : eachUser.google.access_token,
+                      refresh_token: tokens? tokens.refresh_token : eachUser.google.refresh_token
                     });
-                    invitee.google = tokens;
-                    invitee.save(function(err, invitee) {
-                      if (err) {
-                        console.log(err);
-                        return;
+                    User.findByIdAndUpdate(eachUser._id, {google: tokens}, function(err) {
+                      if (err) console.log(err);
+                      else {
+                        addMeeting(web, message, oauth2Client, date, time, subject, parsed.user.id, eachUser.slackID, meetingEmails);
                       }
-                      addMeeting(web, message, oauth2Client, date, time, subject, parsed.user.id, slackID);
-                    });
+                    })
                   });
                 } else {
-                  addMeeting(web, message, oauth2Client, date, time, subject, parsed.user.id, slackID);
+                  addMeeting(web, message, oauth2Client, date, time, subject, parsed.user.id, eachUser.slackID, meetingEmails);
                 }
-              }
+              })
             })
-          })
 
           var newMsg = JSON.parse(req.body.payload).original_message;
           newMsg.attachments.pop();
