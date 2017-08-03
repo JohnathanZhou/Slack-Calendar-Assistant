@@ -6,7 +6,7 @@ mongoose.connect(connect);
 var models = require('./models/models');
 var Meeting = models.Meeting;
 
-function addMeeting (web, oauth2Client, date, time, subject) {
+function addMeeting (web, message, oauth2Client, date, time, subject, userID, inviteeID) {
   // make a new meeting model in mLab
   // new Meeting ({
   //   day: ,
@@ -27,7 +27,7 @@ function addMeeting (web, oauth2Client, date, time, subject) {
       'timeZone': 'America/Los_Angeles',
     },
     'end': {
-      'dateTime': date + "T17:30:00",
+      'dateTime': date + "T19:30:00",
       'timeZone': 'America/Los_Angeles',
     },
     // 'recurrence': [
@@ -51,10 +51,12 @@ function addMeeting (web, oauth2Client, date, time, subject) {
     resource: event,
   }, function(err, event) {
     if (err) {
-      web.chat.postMessage(message.channel, "There is an error creating meeting " + err);
+      console.log("err connecting to calendar", err);
       return;
     }
-    web.chat.postMessage(message.channel, "Nice! Your meeting has been created at " + event.htmlLink);
+    if (userID === inviteeID) {
+      web.chat.postMessage(message.channel, "Nice! Your reminder has been created at " + event.htmlLink);
+    }
   });
 }
 

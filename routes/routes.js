@@ -12,7 +12,7 @@ var Reminder = models.Reminder;
 var Task = models.Task;
 var Meeting = models.Meeting;
 var addReminder = require('../addReminder');
-// var addMeeting = require('../addMeeting');
+var addMeeting = require('../addMeeting');
 mongoose.connect(connect);
 
 function allRoutes (rtm, web, message) {
@@ -74,7 +74,6 @@ function allRoutes (rtm, web, message) {
 
   router.post('/interactive', urlencodedParser, (req, res) => {
     var parsed = JSON.parse(req.body.payload);
-    console.log('THIS IS PAYLOAD ', parsed);
     var response = parsed.actions[0].value;
     var oauth2Client = new OAuth2(
       process.env.GOOGLE_CLIENT_ID,
@@ -124,7 +123,6 @@ function allRoutes (rtm, web, message) {
 
         } else if (response === 'scheduleMeeting') {
           // parse invitees, time, date, and subject for the meeting
-
           var text = parsed.original_message.text;
           var split = text.split('=');
           var subject = split[1].split(' ');
@@ -146,45 +144,50 @@ function allRoutes (rtm, web, message) {
           var date = split[3].split(' ')[0];
           var time = split[4].split(' ')[0];
 
+          // send it for the current actual bot user
+          addMeeting(web, message, oauth2Client, date, time, subject, parsed.user.id, parsed.user.id);
+
           inviteesID.forEach(function(slackID) {
-            User.findOne({slackID: slackID}, function (err, user) {
+            User.findOne({slackID: slackID}, function (err, invitee) {
               if (err) {
                 console.log(err);
-              } else if (user) {
-                console.log("THIS IS USER", user);
+              } else if (invitee) {
                 var oauth2Client = new OAuth2(
                   process.env.GOOGLE_CLIENT_ID,
                   process.env.GOOGLE_CLIENT_SECRET,
                   process.env.DOMAIN + "/auth"
                 );
                 oauth2Client.setCredentials({
-                  access_token: user.google.access_token,
-                  refresh_token: user.google.refresh_token
+                  access_token: invitee.google.access_token,
+                  refresh_token: invitee.google.refresh_token
                 });
                 // if the token expired, refresh the tokens and set the new tokens to the user model
                 var rightNow = new Date();
-                if (user.google.expiry_date - rightNow.getTime() <= 0 ) {
+                if (invitee.google.expiry_date - rightNow.getTime() <= 0 ) {
                   oauth2Client.refreshAccessToken(function(err, tokens) {
-                    console.log('THIS IS TOKENS', tokens);
                     oauth2Client.setCredentials({
                       access_token: tokens.access_token,
                       refresh_token: tokens.refresh_token
                     });
-                    user.google = tokens;
-                    user.save(function(err, user) {
+                    invitee.google = tokens;
+                    invitee.save(function(err, invitee) {
                       if (err) {
                         console.log(err);
                       } else {
-                        addReminder(web, oauth2Client, date, time, subject);
+                        addMeeting(web, message, oauth2Client, date, time, subject, parsed.user.id, slackID);
                       }
                     });
                   });
                 } else {
-                  addReminder(web, oauth2Client, date, time, subject);
+                  addMeeting(web, message, oauth2Client, date, time, subject, parsed.user.id, slackID);
                 }
               }
             })
           })
+
+          var newMsg = JSON.parse(req.body.payload).original_message;
+          newMsg.attachments.pop();
+          res.send(newMsg);
 
         } else if (response === 'dontScheduleReminder' || response === 'dontScheduleMeeting') {
           var newMsg = JSON.parse(req.body.payload).original_message;
