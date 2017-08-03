@@ -8,8 +8,6 @@ mongoose.connect(connect);
 var models = require('./models/models');
 var User = models.User;
 
-
-
 function checkConflict(messageObj, user) {
   return new Promise(function(resolve, reject) {
     var listOfBusyTime;
@@ -18,7 +16,6 @@ function checkConflict(messageObj, user) {
     })
     Promise.all(userPromises)
       .then(function(userObjects) {
-        var userobjects = userObjects;
         userObjects.push(user);
         return userObjects;
       })
@@ -65,26 +62,48 @@ function checkBusy(date, time, object) {
           access_token: tokens.access_token,
           refresh_token: tokens.refresh_token
         });
-        User.findByIdAndUpdate(object._id, {google: tokens});
-        console.log("this is user object", object);
-        console.log("oauth2Client", oauth2Client);
-        calendar.events.list({
-          auth: oauth2Client,
-          calendarId: 'primary',
-          timeMin: thisDate
-        }, function(err, list) {
-          if (err) {
-            console.log("err connecting to calendar", err);
-            reject(err);
-            return;
-          } else {
-            var eventTimeList = list.items.map((event) => {
-              console.log("this is time", event.start.dateTime, event.end.dateTime);
-              return [event.start.dateTime, event.end.dateTime];
-            })
-            resolve(eventTimeList);
-          }
+        User.findById(object._id, function(err, user) {
+          user.google = tokens;
+          user.save(function(err) {
+            if (err) {
+              reject(err);
+              return;
+            }
+            calendar.events.list({
+              auth: oauth2Client,
+              calendarId: 'primary',
+              timeMin: thisDate.toISOString()
+            }, function(err, list) {
+              if (err) {
+                console.log("err connecting to calendar 1", err);
+                reject(err);
+                return;
+              } else {
+                var eventTimeList = list.items.map((event) => {
+                  return {"start": event.start.dateTime, "end": event.end.dateTime};
+                })
+                resolve(eventTimeList);
+              }
+            });
+          });
         });
+      });
+    } else {
+      calendar.events.list({
+        auth: oauth2Client,
+        calendarId: 'primary',
+        timeMin: thisDate.toISOString()
+      }, function(err, list) {
+        if (err) {
+          console.log("err connecting to calendar 2", err);
+          reject(err);
+          return;
+        } else {
+          var eventTimeList = list.items.map((event) => {
+            return {"start": event.start.dateTime, "end": event.end.dateTime};
+          })
+          resolve(eventTimeList);
+        }
       });
     }
   })

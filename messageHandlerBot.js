@@ -129,56 +129,61 @@ const confirmMessage = function(channel, message, user) {
     })
   } else if (message.includes("set!") && message.includes("Meeting")) {
     var messageObj = parseMessage(message);
-    var eventTimeList;
     checkConflict(messageObj, user)
       .then((list) => {
-        eventTimeList = list;
-      })
-    console.log("this is eventtime list", eventTimeList);
-    // if (checkedConflict.conflict) {
-      //     findFreeTimes(checkedConflict.returnValue)
-      // }
-      // else{}
-    web.chat.postMessage(channel, message+' Confirm that this event is ok? ', { "attachments": [
-          {
-              "fallback": "Unable to set calendar event",
-              "callback_id": "wopr_game",
-              "color": "#3AA3E3",
-              "attachment_type": "default",
-              "actions": [
-                {
-                    "name": "meeting",
-                    "text": "Yes",
-                    "type": "button",
-                    "value": "scheduleMeeting",
-                    "confirm": {
-                      "title": "Are you sure?",
-                      "text": "This will add a calendar meeting to your google account",
-                      "ok_text": "Yes",
-                      "dismiss_text": "No"
-                    }
-                },
-                {
-                    "name": "meeting",
-                    "text": "No",
-                    "type": "button",
-                    "value": "dontScheduleMeeting",
-                    "confirm": {
-                      "title": "Are you sure you want to cancel?",
-                      "text": "This meeting will not be saved",
-                      "ok_text": "Yes",
-                      "dismiss_text": "No"
-                    }
-                },
-            ]
+        var completeEventTimeList = [].concat.apply([], list);
+
+        // if (checkedConflict.conflict) {
+        //     findFreeTimes(checkedConflict.returnValue)
+        //     return the rtm message that let user click on 1 of 10 freetimes
+        // } else{
+        //   just as the user to confirm the meeting at the set time.
+        // }
+
+        web.chat.postMessage(channel, message+' Confirm that this event is ok? ', { "attachments": [
+              {
+                  "fallback": "Unable to set calendar event",
+                  "callback_id": "wopr_game",
+                  "color": "#3AA3E3",
+                  "attachment_type": "default",
+                  "actions": [
+                    {
+                        "name": "meeting",
+                        "text": "Yes",
+                        "type": "button",
+                        "value": "scheduleMeeting",
+                        "confirm": {
+                          "title": "Are you sure?",
+                          "text": "This will add a calendar meeting to your google account",
+                          "ok_text": "Yes",
+                          "dismiss_text": "No"
+                        }
+                    },
+                    {
+                        "name": "meeting",
+                        "text": "No",
+                        "type": "button",
+                        "value": "dontScheduleMeeting",
+                        "confirm": {
+                          "title": "Are you sure you want to cancel?",
+                          "text": "This meeting will not be saved",
+                          "ok_text": "Yes",
+                          "dismiss_text": "No"
+                        }
+                    },
+                ]
+              }
+          ]}, function(err, res) {
+          if (err) {
+            console.log('Error:', err);
+          } else {
+            console.log('Message sent: ', res);
           }
-      ]}, function(err, res) {
-    if (err) {
-      console.log('Error:', err);
-    } else {
-      console.log('Message sent: ', res);
-    }
-    })
+        })
+      })
+      .catch(err => {
+        console.log("err using checkConflict in bot", err);
+      })
   }
   else {
     web.chat.postMessage(channel, message)
