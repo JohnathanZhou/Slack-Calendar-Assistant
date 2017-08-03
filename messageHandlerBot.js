@@ -56,7 +56,7 @@ const postAI = function(message, userId) {
   )
 }
 
-const confirmMessage = function(channel, message) {
+const confirmMessage = function(channel, message, user) {
   if (message.includes("set!") && message.includes("Reminder")) {
     // web.chat.postMessage(channel, message, web.chat.postMessage(channel, message)
     web.chat.postMessage(channel, message+' Confirm that this event is ok? ', { "attachments": [
@@ -100,7 +100,10 @@ const confirmMessage = function(channel, message) {
     }
     })
   } else if (message.includes("set!") && message.includes("Meeting")) {
-    // web.chat.postMessage(channel, message, web.chat.postMessage(channel, message)
+    // var checkedConflct = checkConflict(message, user)
+    // if (checkedConflct.conflict) {
+      //     handleMessage(checkedConflict.returnValue)
+      // }
     web.chat.postMessage(channel, message+' Confirm that this event is ok? ', { "attachments": [
           {
               "fallback": "Unable to set calendar event",
@@ -169,7 +172,7 @@ rtm.on(RTM_EVENTS.MESSAGE, function handleRtmMessage(message) {
           .then((data) =>
             {
             const msg = data.data.result.fulfillment.speech
-            confirmMessage(message.channel, msg)
+            confirmMessage(message.channel, msg, user)
           })
           .catch((err) => (
             console.log('error ', err)))
