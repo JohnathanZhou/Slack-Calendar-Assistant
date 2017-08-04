@@ -166,13 +166,6 @@ const confirmMessage = function(channel, message, user) {
       checkConflict(messageObj, user)
       .then((list) => {
         var completeEventTimeList = [].concat.apply([], list);
-
-        // if (checkedConflict.conflict) {
-        //     findFreeTimes(checkedConflict.returnValue)
-        //     return the rtm message that let user click on 1 of 10 freetimes
-        // } else{
-        //   just as the user to confirm the meeting at the set time.
-        // }
         if (!findFreeTime(completeEventTimeList, messageObj)) {
           web.chat.postMessage(channel, message+' Confirm that this event is ok? ', { "attachments": [
                 {
