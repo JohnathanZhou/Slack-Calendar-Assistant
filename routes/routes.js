@@ -127,7 +127,7 @@ function allRoutes (rtm, web, message) {
           newMsg.attachments.pop();
           res.send(newMsg)
 
-        } else if (response === 'scheduleMeeting' || typeof dropdownDate.value === 'string') {
+        } else if (response === 'scheduleMeeting' || dropdownDate) {
           // parse invitees, time, date, and subject for the meeting
           if (response) {
             var text = parsed.original_message.text;
@@ -158,7 +158,7 @@ function allRoutes (rtm, web, message) {
               return User.findOne({slackID: id}).exec();
             })
           }
-          else if (dropdownDate.value) {
+          else if (dropdownDate) {
             var text = textToParse
             var split = text.split('=');
             var subject = split[1].split(' ');
