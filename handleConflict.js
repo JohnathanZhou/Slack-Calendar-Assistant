@@ -55,6 +55,7 @@ function checkBusy(date, time, object) {
     if (object.google.expiry_date - rightNow.getTime() <= 0 ) {
       oauth2Client.refreshAccessToken(function(err, tokens) {
         if (err) {
+          console.log('Error in refreshing token', err);
           reject(err);
           return;
         }
@@ -66,6 +67,7 @@ function checkBusy(date, time, object) {
           user.google = tokens;
           user.save(function(err) {
             if (err) {
+              console.log('Error in finding user', err);
               reject(err);
               return;
             }

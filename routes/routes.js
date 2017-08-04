@@ -75,7 +75,12 @@ function allRoutes (rtm, web, message) {
 
   router.post('/interactive', urlencodedParser, (req, res) => {
     var parsed = JSON.parse(req.body.payload);
+    console.log('this is parsed stuff, look for what you need', parsed);
     var response = parsed.actions[0].value;
+    var dropdownDate = parsed.actions[0].selected_options //dropdown value
+    console.log(parsed.original_message.text);
+    var textToParse = parsed.callback_id //my hacky way of getting content
+    console.log(textToParse);
     var oauth2Client = new OAuth2(
       process.env.GOOGLE_CLIENT_ID,
       process.env.GOOGLE_CLIENT_SECRET,
@@ -122,35 +127,63 @@ function allRoutes (rtm, web, message) {
           newMsg.attachments.pop();
           res.send(newMsg)
 
-        } else if (response === 'scheduleMeeting') {
+        } else if (response === 'scheduleMeeting' || typeof dropdownDate.value === 'string') {
           // parse invitees, time, date, and subject for the meeting
-          var text = parsed.original_message.text;
-          var split = text.split('=');
-          var subject = split[1].split(' ');
-          subject.pop();
-          subject = subject.join(' ');
+          if (response) {
+            var text = parsed.original_message.text;
+            var split = text.split('=');
+            var subject = split[1].split(' ');
+            subject.pop();
+            subject = subject.join(' ');
+            console.log('i get inside the meeting stuff');
+            var inviteesArray = split[2].split(' ');
+            var invitees = [];
+            inviteesArray.forEach(function(word) {
+              if (word.indexOf('@') !== -1) {
+                invitees.push(word);
+              }
+            });
+            var inviteesID = [];
+            invitees.forEach(function(word) {
+              inviteesID.push(word.slice(5, word.length));
+            })
 
-          var inviteesArray = split[2].split(' ');
-          var invitees = [];
-          inviteesArray.forEach(function(word) {
-            if (word.indexOf('@') !== -1) {
-              invitees.push(word);
-            }
-          });
-          var inviteesID = [];
-          invitees.forEach(function(word) {
-            inviteesID.push(word.slice(5, word.length));
-          })
+            var date = split[3].split(' ')[0];
+            var time = split[4].split(' ')[0];
 
-          var date = split[3].split(' ')[0];
-          var time = split[4].split(' ')[0];
+            // send it for the current actual bot user
+            //addMeeting(web, message, oauth2Client, date, time, subject, parsed.user.id, parsed.user.id);
 
-          // send it for the current actual bot user
-          //addMeeting(web, message, oauth2Client, date, time, subject, parsed.user.id, parsed.user.id);
-
-          var userPromises = inviteesID.map(function(id) {
-            return User.findOne({slackID: id}).exec();
-          })
+            var userPromises = inviteesID.map(function(id) {
+              return User.findOne({slackID: id}).exec();
+            })
+          }
+          else if (dropdownDate.value) {
+            var text = textToParse
+            var split = text.split('=');
+            var subject = split[1].split(' ');
+            subject.pop();
+            subject = subject.join(' ');
+            console.log('i get in here bro');
+            var inviteesArray = split[2].split(' ');
+            var invitees = [];
+            inviteesArray.forEach(function(word) {
+              if (word.indexOf('@') !== -1) {
+                invitees.push(word);
+              }
+            });
+            var inviteesID = [];
+            invitees.forEach(function(word) {
+              inviteesID.push(word.slice(5, word.length));
+            })
+            var date = split[3].split(' ')[0];
+            var time = split[4].split(' ')[0];
+            // send it for the current actual bot user
+            //addMeeting(web, message, oauth2Client, date, time, subject, parsed.user.id, parsed.user.id);
+            var userPromises = inviteesID.map(function(id) {
+              return User.findOne({slackID: id}).exec();
+            })
+          }
           Promise.all(userPromises)
             .then(function(userObjects) {
               var meetingEmails = userObjects.map(function(eachUser) {

@@ -141,48 +141,78 @@ const confirmMessage = function(channel, message, user) {
         // } else{
         //   just as the user to confirm the meeting at the set time.
         // }
-        console.log('THIS SHOULD BE FALSE OR ARRAY: ', findFreeTime(completeEventTimeList, messageObj));
-
-        web.chat.postMessage(channel, message+' Confirm that this event is ok? ', { "attachments": [
-              {
-                  "fallback": "Unable to set calendar event",
-                  "callback_id": "wopr_game",
-                  "color": "#3AA3E3",
-                  "attachment_type": "default",
-                  "actions": [
+        if (!findFreeTime(completeEventTimeList, messageObj)) {
+          web.chat.postMessage(channel, message+' Confirm that this event is ok? ', { "attachments": [
+                {
+                    "fallback": "Unable to set calendar event",
+                    "callback_id": "wopr_game",
+                    "color": "#3AA3E3",
+                    "attachment_type": "default",
+                    "actions": [
+                      {
+                          "name": "meeting",
+                          "text": "Yes",
+                          "type": "button",
+                          "value": "scheduleMeeting",
+                          "confirm": {
+                            "title": "Are you sure?",
+                            "text": "This will add a calendar meeting to your google account",
+                            "ok_text": "Yes",
+                            "dismiss_text": "No"
+                          }
+                      },
+                      {
+                          "name": "meeting",
+                          "text": "No",
+                          "type": "button",
+                          "value": "dontScheduleMeeting",
+                          "confirm": {
+                            "title": "Are you sure you want to cancel?",
+                            "text": "This meeting will not be saved",
+                            "ok_text": "Yes",
+                            "dismiss_text": "No"
+                          }
+                      },
+                  ]
+                }
+            ]}, function(err, res) {
+            if (err) {
+              console.log('Error:', err);
+            } else {
+              console.log('Message sent: ', res);
+            }
+          })
+        }
+        else {
+          alternateDateArr = findFreeTime(completeEventTimeList, messageObj);
+          var niceDateArr = []
+          var actualMessage = message
+          alternateDateArr.map((time) => {
+            var niceDate = new Date(time)
+            niceDateArr.push({"text": new Date(time).toUTCString(), "value": new Date(time)
+            })
+          })
+          console.log('This should b the alternate dates: ', niceDateArr);
+          web.chat.postMessage(channel, "Unfortunately, that time won't work. Here are some available times!",
+          { "attachments": [
+            {
+                "text": "Choose a different date",
+                "fallback": "If you could read this message, you'd be choosing something fun to do right now.",
+                "color": "#3AA3E3",
+                "attachment_type": "default",
+                "callback_id": actualMessage,
+                "actions": [
                     {
-                        "name": "meeting",
-                        "text": "Yes",
-                        "type": "button",
-                        "value": "scheduleMeeting",
-                        "confirm": {
-                          "title": "Are you sure?",
-                          "text": "This will add a calendar meeting to your google account",
-                          "ok_text": "Yes",
-                          "dismiss_text": "No"
-                        }
-                    },
-                    {
-                        "name": "meeting",
-                        "text": "No",
-                        "type": "button",
-                        "value": "dontScheduleMeeting",
-                        "confirm": {
-                          "title": "Are you sure you want to cancel?",
-                          "text": "This meeting will not be saved",
-                          "ok_text": "Yes",
-                          "dismiss_text": "No"
-                        }
-                    },
+                        "name": "Alternative_Dates",
+                        "text": "Pick a date and time",
+                        "type": "select",
+                        "options": niceDateArr
+                    }
                 ]
-              }
-          ]}, function(err, res) {
-          if (err) {
-            console.log('Error:', err);
-          } else {
-            console.log('Message sent: ', res);
-          }
-        })
+            }
+          ]}
+        )
+      }
       })
       .catch(err => {
         console.log("err using checkConflict in bot", err);
