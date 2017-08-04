@@ -211,10 +211,18 @@ function allRoutes (rtm, web, message) {
                       access_token: tokens ? tokens.access_token : eachUser.google.access_token,
                       refresh_token: tokens? tokens.refresh_token : eachUser.google.refresh_token
                     });
-                    User.findByIdAndUpdate(eachUser._id, {google: tokens}, function(err) {
-                      if (err) console.log(err);
+                    User.findById(eachUser._id, function(err, userUpdate) {
+                      if (err)
+                        console.log(err);
                       else {
-                        addMeeting(web, message, oauth2Client, date, time, subject, parsed.user.id, eachUser.slackID, meetingEmails);
+                        userUpdate.google = tokens;
+                        userUpdate.save(function(err) {
+                          if (err) {
+                            console.log("err 1: ", err);
+                          } else {
+                            addMeeting(web, message, oauth2Client, date, time, subject, parsed.user.id, eachUser.slackID, meetingEmails);
+                          }
+                        })
                       }
                     })
                   });
