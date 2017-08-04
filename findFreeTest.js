@@ -6,9 +6,12 @@ function findFreeTimes(eventTimes, messageObj) {
   var currentEventStart = convTime.getTime()
   var currentEventEnd = currentEventStart + 1800000
   var currentEventObj = {'start': currentEventStart, 'end': currentEventEnd}
-  console.log('this is current time object: ', currentEventObj);
-  console.log("HERE ARE EVENT TIMES: ", eventTimes)
   for (var i = 0; i<eventTimes.length; i++) {
+
+    if (!eventTimes[i].start){
+      console.log('UNDEFINED REMINDER: ', eventTimes[i].start)
+    } else {
+
     var eventTimeObject = convertMilli(eventTimes[i]);
     if (checkConflict(eventTimeObject, currentEventObj)) {
       console.log('single conflict found');
@@ -18,17 +21,17 @@ function findFreeTimes(eventTimes, messageObj) {
       console.log('no conflict at this event', eventTimes[i]);
     }
   }
+  }
   console.log('This means that there are no time conflicts currently');
   return false
 }
 //convert to milliseconds, takes in object with start/end
 function convertMilli(eventTimeObj) {
   console.log('before: ', eventTimeObj);
-  var eventStartTime = new Date(eventTimeObj.start)
-  eventStartTime = eventStartTime.getTime()
-  var eventEndTime = new Date(eventTimeObj.end)
-  eventEndTime = eventEndTime.getTime()
-  return {'start': eventStartTime, 'end': eventEndTime}
+  var eventStartTime = Date.parse(eventTimeObj.start) - 1000*60*60*7;
+  var eventEndTime = Date.parse(eventTimeObj.end) - 1000*60*60*7;
+  console.log("AFTER: ", new Date(eventStartTime), new Date(eventEndTime));
+  return {'start': eventStartTime, 'end': eventEndTime};
 }
 
 //checks conflict between two time objects
@@ -40,14 +43,11 @@ function checkConflict(eventTimeObj, currentEventObj) {
 
       if (currentEventStart > eventStartTime && currentEventStart > eventEndTime) {
         //schedule event normally
-          console.log("FIRST FALSE TRIGGERED");
           return false;
       } else if (currentEventStart < eventStartTime && currentEventEnd < eventStartTime) {
-          console.log("SECOND FALSE TRIGGERED");
           return false;
       } else {
           //find 10 free times
-          console.log("TRUE TRIGGERED")
           return true
       }
     }
@@ -63,6 +63,7 @@ function arrContainsValue(arr, value) {
 
 //A loop with a return value, takes in eventTimes (array of objects) and a currentEventObj
 function findTenFree(eventTimes, currentEventObj) {
+  console.log("YOU'RE FINDING TEN FREE TIMES")
   var tenFreeTimes = []
   var eventCounter = 0
   var dayCounter = 0
