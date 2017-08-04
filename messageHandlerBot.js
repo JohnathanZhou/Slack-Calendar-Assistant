@@ -85,6 +85,36 @@ const parseMessage = function(message) {
   }
 }
 
+const findUsersBySlack = function(inviteesID) {
+  return new Promise(function(resolve, reject) {
+    var userPromises = inviteesID.map(function(id) {
+      return User.findOne({slackID: id}).exec();
+    })
+    Promise.all(userPromises)
+      .then(function(userObjects) {
+        userObjects.forEach(function(user) {
+          if (!user.google) {
+            console.log('Found user without google auth, the message below shoudl send', user.slackUsername);
+            console.log(rtm.dataStore.users.U6G8A3413._properties);
+            console.log(rtm.dataStore.users.U6G8A3413.profile);
+            var channelID = rtm.dataStore.getChannelById(user.slackID);
+            console.log();
+            web.chat.postMessage('@'+user.slackUsername, "You have not authenticated with Google Calendar yet. Please follow this link to authenticate: " + process.env.DOMAIN + "/connect?auth_id=" + user._id)
+            while (!user.google) {
+              console.log('waitng...');
+            }
+            return
+          }
+        })
+        resolve()
+      })
+      .catch((err) => {
+        console.log("finding user err: ", err);
+        reject(err);
+      })
+  })
+}
+
 const confirmMessage = function(channel, message, user) {
   if (message.includes("set!") && message.includes("Reminder")) {
     // web.chat.postMessage(channel, message, web.chat.postMessage(channel, message)
@@ -130,7 +160,10 @@ const confirmMessage = function(channel, message, user) {
     })
   } else if (message.includes("set!") && message.includes("Meeting")) {
     var messageObj = parseMessage(message);
-    checkConflict(messageObj, user)
+    console.log('yooooo', messageObj);
+    findUsersBySlack(messageObj.inviteesID)
+    .then((data) => {
+      checkConflict(messageObj, user)
       .then((list) => {
         var completeEventTimeList = [].concat.apply([], list);
 
@@ -215,6 +248,7 @@ const confirmMessage = function(channel, message, user) {
       .catch(err => {
         console.log("err using checkConflict in bot", err);
       })
+    })
   }
   else {
     web.chat.postMessage(channel, message)
