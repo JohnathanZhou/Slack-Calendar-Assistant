@@ -36,19 +36,18 @@ function checkConflict(eventTimeObj, currentEventObj) {
     var currentEventEnd = currentEventObj.end
     var eventStartTime = eventTimeObj.start
     var eventEndTime = eventTimeObj.end
-    if (currentEventStart > eventStartTime && currentEventStart > eventEndTime) {
+
+      if (currentEventStart > eventStartTime && currentEventStart > eventEndTime) {
         //schedule event normally
-        return false
-      }
-      else {
-        //find 10 free times
-        return true
-      }
-    if (currentEventStart < eventStartTime && currentEventEnd < eventStartTime) {
-        return false
-      }
-      else {
-        return true
+          console.log("FIRST FALSE TRIGGERED");
+          return false;
+      } else if (currentEventStart < eventStartTime && currentEventEnd < eventStartTime) {
+          console.log("SECOND FALSE TRIGGERED");
+          return false;
+      } else {
+          //find 10 free times
+          console.log("TRUE TRIGGERED")
+          return true
       }
     }
 
