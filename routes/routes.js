@@ -176,7 +176,7 @@ function allRoutes (rtm, web, message) {
             invitees.forEach(function(word) {
               inviteesID.push(word.slice(5, word.length));
             })
-            var date = split[3].split(' ')[0];
+            var date = dropdownDate.value
             var time = split[4].split(' ')[0];
             // send it for the current actual bot user
             //addMeeting(web, message, oauth2Client, date, time, subject, parsed.user.id, parsed.user.id);
