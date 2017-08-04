@@ -1,24 +1,30 @@
 
-
+// eventTimes is an array of objects with start/end tenFreeTimes
+//messageObj is an object with date, time, etc
 function findFreeTimes(eventTimes, messageObj) {
   var convTime = new Date(messageObj.date + "T" + messageObj.time)
   var currentEventStart = convTime.getTime()
   var currentEventEnd = currentEventStart + 1800000
   var currentEventObj = {'start': currentEventStart, 'end': currentEventEnd}
   eventTimes.map((eventTimeObj) => {
-    var eventStartTime = new Date(eventTimeObj.start)
-    eventStartTime = eventStartTime.getTime()
-    var eventEndTime = new Date(eventTimeObj.end)
-    eventStartTime = eventStartTime.getTime()
-    if (!checkIndividualTime(eventTimeObj, currentEventObj)) {
-      findTenFree(eventTimes, currentEventEnd)
+    var eventTimeObject = convertMilli(eventTimeObj)
+    if (checkConflict(eventTimeObject, currentEventObj)) {
+      findTenFree(eventTimes, curentEventObj)
     }
     else {
       return false
     }
   })
 }
-
+//convert to milliseconds, takes in object with start/end
+function convertMilli(eventTimeObj) {
+  var eventStartTime = new Date(eventTimeObj.start)
+  eventStartTime = eventStartTime.getTime()
+  var eventEndTime = new Date(eventTimeObj.end)
+  eventEndTime = eventEndTime.getTime()
+  return {'start': eventStartTime, 'end': eventEndTime}
+}
+//checks conflict between two time objects
 function checkConflict(eventTimeObj, currentEventObj) {
     var currentEventStart = currentEventObj.start
     var currentEventEnd = currentEventObj.end
@@ -41,8 +47,8 @@ function checkConflict(eventTimeObj, currentEventObj) {
       }
     }
 }
-
-function findTenFree(eventTimes, currentEventEnd) {
+//A loop with a return value, takes in eventTimes (array of objects) and a currentEventObj
+function findTenFree(eventTimes, currentEventObj) {
   var tenFreeTimes = []
   var eventCounter = 0
   var dayCounter = 0
@@ -50,21 +56,28 @@ function findTenFree(eventTimes, currentEventEnd) {
   var now = new Date().getTime();
   var time = now - now%aDay + aDay;
   var halfHour = aDay/48;
-  var startTime = currentEventEnd + 1800000
+  var startTime = currentEventObj.end + 1800000
   while (eventCounter < 10) {
-    while(dayCounter < 3) {
-
-      if(checkIndividualTime) {
-        eventCounter ++
-        if (dayCounter === 2) {
-          dayCounter = 0
+    while (dayCounter < 3) {
+      eventTimes.map((eventObj) => {
+        var eventTimeObject = convertMilli(eventObj)
+        if(!checkConflict(eventTimeObject, {'start': startTime, 'end': startTime + halfHour})) {
+          tenFreeTimes.push(startTime)
+          eventCounter ++
+          if (dayCounter === 2) {
+            dayCounter = 0
+            startTime = startTime - startTime%aDay + aDay + aDay/3
+          }
+          if (eventCounter === 10) {
+            return tenFreeTimes
+          }
+          else {
+            dayCounter++
+          }
         }
-      }
+      })
     }
-
-
   }
-
 }
 
 module.exports = findFreeTimes;
