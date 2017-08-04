@@ -100,9 +100,9 @@ const findUsersBySlack = function(inviteesID) {
             var channelID = rtm.dataStore.getChannelById(user.slackID);
             console.log();
             web.chat.postMessage('@'+user.slackUsername, "You have not authenticated with Google Calendar yet. Please follow this link to authenticate: " + process.env.DOMAIN + "/connect?auth_id=" + user._id)
-            while (!user.google) {
-              console.log('waitng...');
-            }
+            // while (!user.google) {
+            //   console.log('waitng...');
+            // }
             return
           }
         })
@@ -166,6 +166,13 @@ const confirmMessage = function(channel, message, user) {
       checkConflict(messageObj, user)
       .then((list) => {
         var completeEventTimeList = [].concat.apply([], list);
+
+        // if (checkedConflict.conflict) {
+        //     findFreeTimes(checkedConflict.returnValue)
+        //     return the rtm message that let user click on 1 of 10 freetimes
+        // } else{
+        //   just as the user to confirm the meeting at the set time.
+        // }
         if (!findFreeTime(completeEventTimeList, messageObj)) {
           web.chat.postMessage(channel, message+' Confirm that this event is ok? ', { "attachments": [
                 {
