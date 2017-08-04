@@ -25,6 +25,8 @@ var axios = require('axios');
 var models = require('./models/models');
 var routes = require('./routes/routes');
 var checkConflict = require('./handleConflict');
+var findFreeTimes = require('./findFreeTimes');
+var findFreeTime = require('./findFreeTest');
 var User = models.User;
 
 var urlencodedParser = bodyParser.urlencoded({ extended: false });
@@ -139,6 +141,7 @@ const confirmMessage = function(channel, message, user) {
         // } else{
         //   just as the user to confirm the meeting at the set time.
         // }
+        console.log('THIS SHOULD BE FALSE OR ARRAY: ', findFreeTime(completeEventTimeList, messageObj));
 
         web.chat.postMessage(channel, message+' Confirm that this event is ok? ', { "attachments": [
               {
