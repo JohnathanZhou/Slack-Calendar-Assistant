@@ -60,7 +60,6 @@ const postAI = function(message, userId) {
 }
 
 const parseMessage = function(message) {
-  console.log("parsedMessage message", message);
   var split = message.split('=');
   var subject = split[1].split(' ');
   subject.pop();
@@ -192,7 +191,6 @@ const confirmMessage = function(channel, message, user) {
             niceDateArr.push({"text": new Date(time).toUTCString(), "value": new Date(time)
             })
           })
-          console.log('This should b the alternate dates: ', niceDateArr);
           web.chat.postMessage(channel, "Unfortunately, that time won't work. Here are some available times!",
           { "attachments": [
             {

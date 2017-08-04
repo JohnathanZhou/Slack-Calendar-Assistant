@@ -52,7 +52,6 @@ function allRoutes (rtm, web, message) {
     );
     oauth2Client.getToken(code, function(err, tokens) {
       if (! err) {
-        console.log(id);
         User.findByIdAndUpdate(realId, {google: tokens}, {new: true},  function(err, user) {
           if (err) {
             console.log('This is your ERROR: ', err);
@@ -78,9 +77,7 @@ function allRoutes (rtm, web, message) {
     console.log('this is parsed stuff, look for what you need', parsed);
     var response = parsed.actions[0].value;
     var dropdownDate = parsed.actions[0].selected_options //dropdown value
-    console.log(parsed.original_message.text);
     var textToParse = parsed.callback_id //my hacky way of getting content
-    console.log(textToParse);
     var oauth2Client = new OAuth2(
       process.env.GOOGLE_CLIENT_ID,
       process.env.GOOGLE_CLIENT_SECRET,
@@ -135,7 +132,6 @@ function allRoutes (rtm, web, message) {
             var subject = split[1].split(' ');
             subject.pop();
             subject = subject.join(' ');
-            console.log('i get inside the meeting stuff');
             var inviteesArray = split[2].split(' ');
             var invitees = [];
             inviteesArray.forEach(function(word) {
@@ -151,9 +147,6 @@ function allRoutes (rtm, web, message) {
             var date = split[3].split(' ')[0];
             var time = split[4].split(' ')[0];
 
-            // send it for the current actual bot user
-            //addMeeting(web, message, oauth2Client, date, time, subject, parsed.user.id, parsed.user.id);
-
             var userPromises = inviteesID.map(function(id) {
               return User.findOne({slackID: id}).exec();
             })
@@ -164,7 +157,6 @@ function allRoutes (rtm, web, message) {
             var subject = split[1].split(' ');
             subject.pop();
             subject = subject.join(' ');
-            console.log('i get in here bro');
             var inviteesArray = split[2].split(' ');
             var invitees = [];
             inviteesArray.forEach(function(word) {
@@ -192,9 +184,6 @@ function allRoutes (rtm, web, message) {
               })
               meetingEmails.push(user.slackEmail);
               // addMeeting for the current bot user
-              console.log('placeholder');
-              console.log('this is time, it should be invalid', time);
-              console.log('this is dropdwon date', date);
               addMeeting(web, message, oauth2Client, date, time, subject, parsed.user.id, parsed.user.id, meetingEmails);
               userObjects.forEach(function(eachUser) {
                 var oauth2Client = new OAuth2(
