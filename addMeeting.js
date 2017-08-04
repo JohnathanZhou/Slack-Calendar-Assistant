@@ -7,26 +7,40 @@ var models = require('./models/models');
 var Meeting = models.Meeting;
 
 function addMeeting (web, message, oauth2Client, date, time, subject, userID, inviteeID, meetingEmails) {
-
-  var parsedTime = time.split(':');
+  var parsedTime;
   var endTimeMin = 0;
   var endHour = 0;
-  if (parseInt(parsedTime[1]) === 30) {
-    endHour = parsedTime[0] + 1;
-  } else if (parseInt(parsedTime[1]) > 30) {
-    endTimeMin = parseInt(parsedTime[1]) + 30 - 60;
-    endHour = parseInt(parsedTime[0]) + 1;
-  } else {
-    endTimeMin = parseInt(parsedTime[1]) + 30;
-    endHour = parseInt(parsedTime[0]);
+  if (time !== 'invalid') {
+    console.log('inside invalid');
+    parsedTime = time.split(':');
+    if (parseInt(parsedTime[1]) === 30) {
+      endHour = parsedTime[0] + 1;
+    } else if (parseInt(parsedTime[1]) > 30) {
+      endTimeMin = parseInt(parsedTime[1]) + 30 - 60;
+      endHour = parseInt(parsedTime[0]) + 1;
+    } else {
+      endTimeMin = parseInt(parsedTime[1]) + 30;
+      endHour = parseInt(parsedTime[0]);
+    }
+    if (endHour < 10) {
+      endHour = "0" + endHour;
+    }
+    if (endTimeMin < 10) {
+      endTimeMin = "0" + endTimeMin;
+    }
+  }
+  else {
+    console.log('inside not invalid');
+    console.log(date);
+    var time2 = new Date(date)
+    console.log(time2);
+    time2 = time2.getTime() + 1800000
+    console.log(time2);
+    time2 = new Date(time2)
+    console.log(time2);
+    endTimeMin = time2
   }
 
-  if (endHour < 10) {
-    endHour = "0" + endHour;
-  }
-  if (endTimeMin < 10) {
-    endTimeMin = "0" + endTimeMin;
-  }
 
   var emailArray = meetingEmails.map(function(eachEmail) {
     return {'email': eachEmail};
@@ -46,11 +60,11 @@ function addMeeting (web, message, oauth2Client, date, time, subject, userID, in
   var event = {
     'summary': subject,
     'start': {
-      'dateTime': date + "T" + time,
+      'dateTime': time !== 'invalid' ? date + "T" + time : date,
       'timeZone': 'America/Los_Angeles',
     },
     'end': {
-      'dateTime': date + "T" + endHour + ":" + endTimeMin + ":00",
+      'dateTime': time !== 'invalid' ? date + "T" + endHour + ":" + endTimeMin + ":00" : endTimeMin,
       'timeZone': 'America/Los_Angeles',
     },
     'attendees': emailArray,

@@ -77,7 +77,7 @@ function allRoutes (rtm, web, message) {
     var parsed = JSON.parse(req.body.payload);
     console.log('this is parsed stuff, look for what you need', parsed);
     var response = parsed.actions[0].value;
-    var dropdownDate = parsed.actions[0].selected_options //dropdown value
+    var dropdownDate = parsed.actions[0].selected_options[0] //dropdown value
     console.log(parsed.original_message.text);
     var textToParse = parsed.callback_id //my hacky way of getting content
     console.log(textToParse);
@@ -129,7 +129,7 @@ function allRoutes (rtm, web, message) {
 
         } else if (response === 'scheduleMeeting' || dropdownDate) {
           // parse invitees, time, date, and subject for the meeting
-          if (response) {
+          if (response === 'scheduleMeeting') {
             var text = parsed.original_message.text;
             var split = text.split('=');
             var subject = split[1].split(' ');
@@ -177,7 +177,7 @@ function allRoutes (rtm, web, message) {
               inviteesID.push(word.slice(5, word.length));
             })
             var date = dropdownDate.value
-            var time = split[4].split(' ')[0];
+            var time = 'invalid'
             // send it for the current actual bot user
             //addMeeting(web, message, oauth2Client, date, time, subject, parsed.user.id, parsed.user.id);
             var userPromises = inviteesID.map(function(id) {
@@ -186,13 +186,16 @@ function allRoutes (rtm, web, message) {
           }
           Promise.all(userPromises)
             .then(function(userObjects) {
+              console.log('this should be chill', userObjects);
               var meetingEmails = userObjects.map(function(eachUser) {
                 return eachUser.slackEmail;
               })
               meetingEmails.push(user.slackEmail);
               // addMeeting for the current bot user
+              console.log('placeholder');
+              console.log('this is time, it should be invalid', time);
+              console.log('this is dropdwon date', date);
               addMeeting(web, message, oauth2Client, date, time, subject, parsed.user.id, parsed.user.id, meetingEmails);
-
               userObjects.forEach(function(eachUser) {
                 var oauth2Client = new OAuth2(
                   process.env.GOOGLE_CLIENT_ID,
