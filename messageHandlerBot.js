@@ -97,8 +97,6 @@ const findUsersBySlack = function(inviteesID) {
             console.log('Found user without google auth, the message below shoudl send', user.slackUsername);
             console.log(rtm.dataStore.users.U6G8A3413._properties);
             console.log(rtm.dataStore.users.U6G8A3413.profile);
-            var channelID = rtm.dataStore.getChannelById(user.slackID);
-            console.log();
             web.chat.postMessage('@'+user.slackUsername, "You have not authenticated with Google Calendar yet. Please follow this link to authenticate: " + process.env.DOMAIN + "/connect?auth_id=" + user._id)
             // while (!user.google) {
             //   console.log('waitng...');
@@ -106,7 +104,7 @@ const findUsersBySlack = function(inviteesID) {
             return
           }
         })
-        resolve()
+        resolve(userObjects)
       })
       .catch((err) => {
         console.log("finding user err: ", err);
@@ -162,7 +160,16 @@ const confirmMessage = function(channel, message, user) {
     var messageObj = parseMessage(message);
     console.log('yooooo', messageObj);
     findUsersBySlack(messageObj.inviteesID)
-    .then((data) => {
+    .then((userObjects) => {
+      var checkingUserObj = {}
+      var interval;
+      userObjects.forEach(function(userObj) {
+          while (!userObj.google) {
+            interval = setInterval(function() {console.log('waiting for input')}, 10000)
+            }
+            console.log('we broke out!');
+            clearInterval(interval)
+        })
       checkConflict(messageObj, user)
       .then((list) => {
         var completeEventTimeList = [].concat.apply([], list);
