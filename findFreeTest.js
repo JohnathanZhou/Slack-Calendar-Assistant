@@ -7,14 +7,15 @@ function findFreeTimes(eventTimes, messageObj) {
   var currentEventEnd = currentEventStart + 1800000
   var currentEventObj = {'start': currentEventStart, 'end': currentEventEnd}
   console.log('this is current time object: ', currentEventObj);
+  console.log("HERE ARE EVENT TIMES: ", eventTimes)
   for (var i = 0; i<eventTimes.length; i++) {
-    var eventTimeObject = convertMilli(eventTimes[i])
+    var eventTimeObject = convertMilli(eventTimes[i]);
     if (checkConflict(eventTimeObject, currentEventObj)) {
       console.log('single conflict found');
       return findTenFree(eventTimes, currentEventObj)
     }
     else {
-      console.log('no conflict at this event', eventTimeObj);
+      console.log('no conflict at this event', eventTimes[i]);
     }
   }
   console.log('This means that there are no time conflicts currently');
