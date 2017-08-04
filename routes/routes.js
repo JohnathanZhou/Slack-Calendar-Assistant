@@ -77,7 +77,7 @@ function allRoutes (rtm, web, message) {
     var parsed = JSON.parse(req.body.payload);
     console.log('this is parsed stuff, look for what you need', parsed);
     var response = parsed.actions[0].value;
-    var dropdownDate = parsed.actions[0].selected_options[0] //dropdown value
+    var dropdownDate = parsed.actions[0].selected_options //dropdown value
     console.log(parsed.original_message.text);
     var textToParse = parsed.callback_id //my hacky way of getting content
     console.log(textToParse);
@@ -176,7 +176,7 @@ function allRoutes (rtm, web, message) {
             invitees.forEach(function(word) {
               inviteesID.push(word.slice(5, word.length));
             })
-            var date = dropdownDate.value
+            var date = dropdownDate[0].value
             var time = 'invalid'
             // send it for the current actual bot user
             //addMeeting(web, message, oauth2Client, date, time, subject, parsed.user.id, parsed.user.id);
